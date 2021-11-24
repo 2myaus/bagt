@@ -57,6 +57,8 @@ var downPressed = false;
 var leftPressed = false;
 var rightPressed = false;
 
+var bhstrength = 20;
+
 var shop;
 
 document.addEventListener('keydown', function(event) {
@@ -204,6 +206,9 @@ function loop(){
         var currentThing = things[i];
         currentThing.Update();
     }
+	if(player != null){
+		player.Update();
+	}
 	if(shop != null){
 		shop.Update();
 	}
@@ -226,7 +231,6 @@ function reset(){
     playing = true;
     player = new Player(canvas.width / 2, canvas.height / 2);
     things = [];
-    things.push(player);
     timer = 0;
     summontime = 50;
     points = 0;
@@ -237,6 +241,7 @@ function homereset(){
     playing = false;
     things = [];
     thingstoadd = [];
+	player = null;
     thingstoremove = [];
 	shop = null;
     doreset = false;
@@ -363,6 +368,58 @@ class Asteroid extends PhyThing{
         context.fillStyle = this.color;
         context.fillRect(this.xpos, this.ypos, this.width, this.height);
     }
+}
+
+class BlackHole extends PhyThing{
+    constructor(setx, sety, sethor, setver){
+        super(setx, sety, 60, 60);
+        this.xSpeed = sethor;
+        this.ySpeed = setver;
+        this.color = "white";
+    }
+    Update(){
+		if(!paused){
+			if(this.xSpeed > 0 && this.xpos > canvas.width){
+				thingstoremove.push(this);
+				return;
+			}
+			else if(this.xSpeed < 0 && this.xpos + this.width < 0){
+				thingstoremove.push(this);
+				return;
+			}
+			if(this.ySpeed > 0 && this.ypos > canvas.height){
+				thingstoremove.push(this);
+				return;
+			}
+			else if(this.yspeed < 0 && this.ypos + this.height < 0){
+				thingstoremove.push(this);
+				return;
+			}
+			this.xpos += this.xSpeed;
+			this.ypos += this.ySpeed;
+		}
+		this.centerx = this.xpos + this.width / 2;
+		this.centery = this.ypos + this.height / 2;
+		for(var iter=0;iter<things.length;iter++){
+			this.Accelthing(things[iter]);
+		}
+		this.Accelthing(player);
+        context.fillStyle = this.color;
+        context.fillRect(this.xpos, this.ypos, this.width, this.height);
+		context.fillStyle = "black";
+        context.fillRect(this.xpos + 2, this.ypos + 2, this.width - 4, this.height - 4);
+    }
+	Accelthing(myThing){
+		if(myThing instanceof Asteroid || myThing instanceof Coin || myThing instanceof Player || myThing instanceof Exhaust){
+			var currentcenterx = myThing.xpos + myThing.width / 2;
+			var currentcentery = myThing.ypos + myThing.height / 2;
+			var xdist = this.centerx - currentcenterx;
+			var ydist = this.centery - currentcentery;
+			var cdist = Math.sqrt(Math.pow(xdist, 2) + Math.pow(ydist, 2));
+			myThing.xSpeed += (xdist / cdist) / bhstrength;
+			myThing.ySpeed += (ydist / cdist) / bhstrength;
+		}
+	}
 }
 
 class Coin extends PhyThing{
