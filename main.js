@@ -446,7 +446,7 @@ class HomeManager extends Thing{
             context.fillText("Tip: if the screen seems to small or big to you, use the built in zoom in your browser", 50 * widthfactor, 50 * widthfactor);
             context.fillText("ctrl + or ctrl -", 50 * widthfactor, 90 * widthfactor);
 			context.fillText("Tip: Press TAB to open the shop, where you can spend your points", 50 * widthfactor, 130 * widthfactor);
-			context.fillText("Tip: Coins are yellow squares, slightly smaller than asteroids. They give you points!", 50 * widthfactor, 130 * widthfactor);
+			context.fillText("Tip: Coins are yellow squares, slightly smaller than asteroids. They give you points!", 50 * widthfactor, 170 * widthfactor);
         }
     }
 }
