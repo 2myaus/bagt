@@ -17,6 +17,10 @@ var keys = [];
 var keyslastupdate = [];
     
 var updatespersecond = 60;
+
+var coinchance = 0.1;
+var bhchance = 0.1;
+var bhstrength = 0.03;
     
 var mode = 1; //1 is normal, 2 is inverted
 
@@ -34,6 +38,9 @@ const modeswapKey = 78;
 const exhaustupgradeKey = 69;
 
 const pointupgradeKey = 80;
+
+const powerupgradeKey = 221;
+const powerdowngradeKey = 219;
 
 var timer = 0;
 var summontime = 50;
@@ -57,7 +64,7 @@ var downPressed = false;
 var leftPressed = false;
 var rightPressed = false;
 
-var bhstrength = 20;
+var time;
 
 var shop;
 
@@ -90,7 +97,7 @@ function summonAsteroid(){
     
     var setx;
     var sety;
-    if(Math.random() > 0.1){
+    if(Math.random() > coinchance){
         if(side == 1){
             setx = -30; //keep at asteroid size
             sety = Math.random() * canvas.height;
@@ -118,7 +125,7 @@ function summonAsteroid(){
 
         toAdd = new Asteroid(setx, sety, setxs, setys);
     }
-    else{
+    else if(Math.random() > bhchance || time < 6000){
         if(side == 1){
             setx = -20; //keep at coin size
             sety = Math.random() * canvas.height;
@@ -146,6 +153,34 @@ function summonAsteroid(){
 
         toAdd = new Coin(setx, sety, setxs, setys);
     }
+	else{
+        if(side == 1){
+            setx = -60; //keep at bh size
+            sety = Math.random() * canvas.height;
+            setxs = (Math.random() * 3 + 2)/5;
+            setys = (Math.random() * 2 - 1)/5;
+        }
+        if(side == 2){
+            setx = Math.random() * canvas.width;
+            sety = -60;
+            setxs = (Math.random() * 2 - 1)/5;
+            setys = (Math.random() * 3 + 2)/5;
+        }
+        if(side == 3){
+            setx = canvas.width;
+            sety = Math.random() * canvas.height;
+            setxs = (Math.random() * -3 - 2)/5;
+            setys = (Math.random() * 2 - 1)/5;
+        }
+        if(side == 4){
+            setx = Math.random() * canvas.width;
+            sety = canvas.height;
+            setxs = (Math.random() * 2 - 1)/5;
+            setys = (Math.random() * -3 - 2)/5;
+        }
+
+        toAdd = new BlackHole(setx, sety, setxs, setys);
+	}
     thingstoadd.push(toAdd);
 }
 
@@ -188,6 +223,7 @@ function loop(){
     context.fillRect(0, 0, canvas.width, canvas.height)
     if(playing){
 		if(!paused){
+			time++;
 			timer++;
 			if(timer * widthfactor >= summontime){
 				summonAsteroid();
@@ -197,7 +233,7 @@ function loop(){
         context.fillStyle = "white";
         context.font = (48 * widthfactor).toString()+"px Courier New";
         context.fillText(Math.floor(points * 100).toString(), 50 * widthfactor, 50 * widthfactor);
-        //context.fillText(Math.floor(hiscore * 100).toString(), canvas.width - (50 + 32 * (Math.floor(hiscore * 100).toString()).length) * widthfactor, 50 * widthfactor);
+        context.fillText(Math.floor(time / 60).toString(), canvas.width - (50 + 32 * (Math.floor(time / 60).toString()).length) * widthfactor, 50 * widthfactor);
     }
     if(doreset){
         homereset();
@@ -213,6 +249,7 @@ function loop(){
 		shop.Update();
 	}
     for(i=0;i<thingstoremove.length;i++){
+		//console.log(thingstoremove[i]);
         things.splice(things.indexOf(thingstoremove[i]), 1);
     }
     thingstoremove = [];
@@ -232,6 +269,7 @@ function reset(){
     player = new Player(canvas.width / 2, canvas.height / 2);
     things = [];
     timer = 0;
+	time = 0;
     summontime = 50;
     points = 0;
 	shop = new ShopManager();
@@ -290,19 +328,15 @@ class Exhaust extends PhyThing{
 		if(!paused){
 			if(this.xSpeed > 0 && this.xpos > canvas.width){
 				thingstoremove.push(this);
-				return;
 			}
 			else if(this.xSpeed < 0 && this.xpos + this.width < 0){
 				thingstoremove.push(this);
-				return;
 			}
 			if(this.ySpeed > 0 && this.ypos > canvas.height){
 				thingstoremove.push(this);
-				return;
 			}
-			else if(this.yspeed < 0 && this.ypos + this.height < 0){
+			else if(this.ySpeed < 0 && this.ypos + this.height < 0){
 				thingstoremove.push(this);
-				return;
 			}
 			this.xpos += this.xSpeed;
 			this.ypos += this.ySpeed;
@@ -341,19 +375,15 @@ class Asteroid extends PhyThing{
 		if(!paused){
 			if(this.xSpeed > 0 && this.xpos > canvas.width){
 				thingstoremove.push(this);
-				return;
 			}
 			else if(this.xSpeed < 0 && this.xpos + this.width < 0){
 				thingstoremove.push(this);
-				return;
 			}
 			if(this.ySpeed > 0 && this.ypos > canvas.height){
 				thingstoremove.push(this);
-				return;
 			}
-			else if(this.yspeed < 0 && this.ypos + this.height < 0){
+			else if(this.ySpeed < 0 && this.ypos + this.height < 0){
 				thingstoremove.push(this);
-				return;
 			}
 			this.xpos += this.xSpeed;
 			this.ypos += this.ySpeed;
@@ -381,19 +411,15 @@ class BlackHole extends PhyThing{
 		if(!paused){
 			if(this.xSpeed > 0 && this.xpos > canvas.width){
 				thingstoremove.push(this);
-				return;
 			}
 			else if(this.xSpeed < 0 && this.xpos + this.width < 0){
 				thingstoremove.push(this);
-				return;
 			}
 			if(this.ySpeed > 0 && this.ypos > canvas.height){
 				thingstoremove.push(this);
-				return;
 			}
-			else if(this.yspeed < 0 && this.ypos + this.height < 0){
+			else if(this.ySpeed < 0 && this.ypos + this.height < 0){
 				thingstoremove.push(this);
-				return;
 			}
 			this.xpos += this.xSpeed;
 			this.ypos += this.ySpeed;
@@ -416,8 +442,8 @@ class BlackHole extends PhyThing{
 			var xdist = this.centerx - currentcenterx;
 			var ydist = this.centery - currentcentery;
 			var cdist = Math.sqrt(Math.pow(xdist, 2) + Math.pow(ydist, 2));
-			myThing.xSpeed += (xdist / cdist) / bhstrength;
-			myThing.ySpeed += (ydist / cdist) / bhstrength;
+			myThing.xSpeed += (xdist / cdist) * bhstrength;
+			myThing.ySpeed += (ydist / cdist) * bhstrength;
 		}
 	}
 }
@@ -433,19 +459,15 @@ class Coin extends PhyThing{
 		if(!paused){
 			if(this.xSpeed > 0 && this.xpos > canvas.width){
 				thingstoremove.push(this);
-				return;
 			}
 			else if(this.xSpeed < 0 && this.xpos + this.width < 0){
 				thingstoremove.push(this);
-				return;
 			}
 			if(this.ySpeed > 0 && this.ypos > canvas.height){
 				thingstoremove.push(this);
-				return;
 			}
-			else if(this.yspeed < 0 && this.ypos + this.height < 0){
+			else if(this.ySpeed < 0 && this.ypos + this.height < 0){
 				thingstoremove.push(this);
-				return;
 			}
 			this.xpos += this.xSpeed;
 			this.ypos += this.ySpeed;
@@ -524,11 +546,15 @@ class ShopManager extends Thing{
 			context.fillText("shop", canvas.width / 2, 100 * widthfactor);
 			
 			context.font = (48 * widthfactor).toString()+"px Courier New";
-			context.fillText("Exhaust weight: "+Math.floor(player.exhaustweight * 10000).toString(), 100 * widthfactor, 400 * widthfactor);
-			context.fillText("(E to upgrade - Cost: 10000)", 100 * widthfactor, 448 * widthfactor);
+			context.fillText("Exhaust weight: "+Math.floor(player.exhaustweight * 10000).toString(), 100 * widthfactor, 200 * widthfactor);
+			context.fillText("(E to upgrade - Cost: 10000)", 100 * widthfactor, 248 * widthfactor);
 			
-			context.fillText("Point Multiplier: "+Math.floor(player.pointmulti * 100).toString()+"%", 100 * widthfactor, 600 * widthfactor);
-			context.fillText("(P to upgrade - Cost: 10000)", 100 * widthfactor, 648 * widthfactor);
+			context.fillText("Point Multiplier: "+Math.floor(player.pointmulti * 100).toString()+"%", 100 * widthfactor, 400 * widthfactor);
+			context.fillText("(P to upgrade - Cost: 10000)", 100 * widthfactor, 448 * widthfactor);
+			
+			context.fillText("Thrust Power Multiplier: "+Math.floor(player.power * 100).toString()+"%", 100 * widthfactor, 600 * widthfactor);
+			context.fillText("(] to upgrade - Cost: 5000)", 100 * widthfactor, 648 * widthfactor);
+			context.fillText("([ to downgrade - NO REFUND!)", 100 * widthfactor, 696 * widthfactor);
 			
 			
 			if(keypressed(exhaustupgradeKey) && points > 100){
@@ -540,6 +566,14 @@ class ShopManager extends Thing{
 				player.pointmulti += 0.1;
 				points -= 100;
 			}
+			
+			if(keypressed(powerupgradeKey) && points > 50){
+				player.power += 0.1;
+				points -= 50;
+			}
+			if(keypressed(powerdowngradeKey)){
+				player.power -= 0.1;
+			}
 		}
 	}
 }
@@ -550,6 +584,7 @@ class Player extends PhyThing{
         this.color = "red";
 		this.exhaustweight = 0.01;
 		this.pointmulti = 1;
+		this.power = 1;
     }
     Update(){
 		if(!paused){
@@ -586,8 +621,8 @@ class Player extends PhyThing{
 					ydelta -= 0.1;
 				}
 			}
-			this.xSpeed += xdelta;
-			this.ySpeed += ydelta;
+			this.xSpeed += xdelta * this.power;
+			this.ySpeed += ydelta * this.power;
 			
 			if(xdelta > 0){
 				if(ydelta > 0){
