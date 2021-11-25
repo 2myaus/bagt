@@ -16,7 +16,8 @@ var thingstoremove = [];
 var keys = [];
 var keyslastupdate = [];
     
-var updatespersecond = 60;
+var updatespersecond = 180;
+var regspeed = 3; //Basically how much faster the current updates per second are than 60, so 120 would be regspeed of 2, 180 3, etc.
 
 var coinchance = 0.1;
 var bhchance = 0.1;
@@ -50,6 +51,8 @@ var playing = false;
 var doreset = true;
     
 var points = 0;
+
+var numframes = 0;
     
 //var hiscore = 0;
     
@@ -81,6 +84,86 @@ document.addEventListener('keyup', function(event) {
         keys.splice(keys.indexOf(event.keyCode), 1);
     }
 });
+
+
+setInterval(loop, 1000/updatespersecond);
+
+
+function loop(){
+	widthfactor = canvas.width / virtwidth;
+	upPressed = false;
+	downPressed = false;
+	leftPressed = false;
+	rightPressed = false;
+	for(i=0;i<keys.length;i++){
+		if(upKeys.includes(keys[i])){upPressed = true;}
+		if(downKeys.includes(keys[i])){downPressed = true;}
+		if(leftKeys.includes(keys[i])){leftPressed = true;}
+		if(rightKeys.includes(keys[i])){rightPressed = true;}
+	}
+    if(canvas == c1){
+        canvas = c2;
+        c2.style.visibility = "hidden";
+        c1.style.visibility = "visible";
+    }
+    else if(canvas == c2){
+        canvas = c1;
+        c1.style.visibility = "hidden";
+        c2.style.visibility = "visible";
+    }
+	if(keypressed(modeswapKey)){
+		if(mode == 1){
+			mode = 2;
+		}
+		else{
+			mode = 1;
+		}
+	}
+    context = canvas.getContext("2d");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    context.fillStyle = "black";
+    context.fillRect(0, 0, canvas.width, canvas.height)
+    if(playing){
+		if(!paused){
+			time++;
+			timer++;
+			if((timer * widthfactor) / regspeed >= summontime){
+				summonAsteroid();
+				timer = 0;
+			}
+		}
+        context.fillStyle = "white";
+        context.font = (48 * widthfactor).toString()+"px Courier New";
+        context.fillText(Math.floor(points * 100).toString(), 50 * widthfactor, 50 * widthfactor);
+        context.fillText(Math.floor(time / 60).toString(), canvas.width - (50 + 32 * (Math.floor(time / 60).toString()).length) * widthfactor, 50 * widthfactor);
+    }
+    if(doreset){
+        homereset();
+    }
+    for(i=0;i<things.length;i++){
+        var currentThing = things[i];
+        currentThing.Update();
+    }
+	if(player != null){
+		player.Update();
+	}
+	if(shop != null){
+		shop.Update();
+	}
+    for(i=0;i<thingstoremove.length;i++){
+		//console.log(thingstoremove[i]);
+        things.splice(things.indexOf(thingstoremove[i]), 1);
+    }
+    thingstoremove = [];
+    for(i=0;i<thingstoadd.length;i++){
+        things.push(thingstoadd[i]);
+    }
+    thingstoadd = [];
+	keyslastupdate = keys.slice();
+	numframes++;
+}
 
 function summonAsteroid(){
     points += (1/widthfactor) * player.pointmulti;
@@ -184,82 +267,6 @@ function summonAsteroid(){
     thingstoadd.push(toAdd);
 }
 
-function loop(){
-    setTimeout(loop, 1000/updatespersecond); //Put here to avoid lag, but can be risky on very slow computers
-	widthfactor = canvas.width / virtwidth;
-	upPressed = false;
-	downPressed = false;
-	leftPressed = false;
-	rightPressed = false;
-	for(i=0;i<keys.length;i++){
-		if(upKeys.includes(keys[i])){upPressed = true;}
-		if(downKeys.includes(keys[i])){downPressed = true;}
-		if(leftKeys.includes(keys[i])){leftPressed = true;}
-		if(rightKeys.includes(keys[i])){rightPressed = true;}
-	}
-    if(canvas == c1){
-        canvas = c2;
-        c2.style.visibility = "hidden";
-        c1.style.visibility = "visible";
-    }
-    else if(canvas == c2){
-        canvas = c1;
-        c1.style.visibility = "hidden";
-        c2.style.visibility = "visible";
-    }
-	if(keypressed(modeswapKey)){
-		if(mode == 1){
-			mode = 2;
-		}
-		else{
-			mode = 1;
-		}
-	}
-    context = canvas.getContext("2d");
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    context.clearRect(0, 0, canvas.width, canvas.height);
-    context.fillStyle = "black";
-    context.fillRect(0, 0, canvas.width, canvas.height)
-    if(playing){
-		if(!paused){
-			time++;
-			timer++;
-			if(timer * widthfactor >= summontime){
-				summonAsteroid();
-				timer = 0;
-			}
-		}
-        context.fillStyle = "white";
-        context.font = (48 * widthfactor).toString()+"px Courier New";
-        context.fillText(Math.floor(points * 100).toString(), 50 * widthfactor, 50 * widthfactor);
-        context.fillText(Math.floor(time / 60).toString(), canvas.width - (50 + 32 * (Math.floor(time / 60).toString()).length) * widthfactor, 50 * widthfactor);
-    }
-    if(doreset){
-        homereset();
-    }
-    for(i=0;i<things.length;i++){
-        var currentThing = things[i];
-        currentThing.Update();
-    }
-	if(player != null){
-		player.Update();
-	}
-	if(shop != null){
-		shop.Update();
-	}
-    for(i=0;i<thingstoremove.length;i++){
-		//console.log(thingstoremove[i]);
-        things.splice(things.indexOf(thingstoremove[i]), 1);
-    }
-    thingstoremove = [];
-    for(i=0;i<thingstoadd.length;i++){
-        things.push(thingstoadd[i]);
-    }
-    thingstoadd = [];
-	keyslastupdate = keys.slice();
-}
-
 function keypressed(key){
 	return (keys.includes(key) && !keyslastupdate.includes(key));
 }
@@ -308,8 +315,8 @@ class PhyThing extends Thing{
     }
     Update(){
 		if(!paused){
-			this.xpos += this.xSpeed;
-			this.ypos += this.ySpeed;
+			this.xpos += this.xSpeed / regspeed;
+			this.ypos += this.ySpeed / regspeed;
 		}
         context.fillStyle = this.color;
         context.fillRect(this.xpos, this.ypos, this.width, this.height);
@@ -338,8 +345,8 @@ class Exhaust extends PhyThing{
 			else if(this.ySpeed < 0 && this.ypos + this.height < 0){
 				thingstoremove.push(this);
 			}
-			this.xpos += this.xSpeed;
-			this.ypos += this.ySpeed;
+			this.xpos += this.xSpeed / regspeed;
+			this.ypos += this.ySpeed / regspeed;
 			var hitsomething = false;
 			for(var i=0; i<things.length;i++){
 				var currentThing = things[i];
@@ -385,8 +392,8 @@ class Asteroid extends PhyThing{
 			else if(this.ySpeed < 0 && this.ypos + this.height < 0){
 				thingstoremove.push(this);
 			}
-			this.xpos += this.xSpeed;
-			this.ypos += this.ySpeed;
+			this.xpos += this.xSpeed / regspeed;
+			this.ypos += this.ySpeed / regspeed;
 			var hitPlayer = false;
 			if(this.xpos < player.xpos + player.width && this.ypos < player.ypos + player.height && player.xpos < this.xpos + this.width && player.ypos < this.ypos + this.height){
 				hitPlayer = true;
@@ -421,8 +428,8 @@ class BlackHole extends PhyThing{
 			else if(this.ySpeed < 0 && this.ypos + this.height < 0){
 				thingstoremove.push(this);
 			}
-			this.xpos += this.xSpeed;
-			this.ypos += this.ySpeed;
+			this.xpos += this.xSpeed / regspeed;
+			this.ypos += this.ySpeed / regspeed;
 		}
 		this.centerx = this.xpos + this.width / 2;
 		this.centery = this.ypos + this.height / 2;
@@ -442,8 +449,8 @@ class BlackHole extends PhyThing{
 			var xdist = this.centerx - currentcenterx;
 			var ydist = this.centery - currentcentery;
 			var cdist = Math.sqrt(Math.pow(xdist, 2) + Math.pow(ydist, 2));
-			myThing.xSpeed += (xdist / cdist) * bhstrength;
-			myThing.ySpeed += (ydist / cdist) * bhstrength;
+			myThing.xSpeed += (xdist / cdist) * bhstrength / regspeed;
+			myThing.ySpeed += (ydist / cdist) * bhstrength / regspeed;
 		}
 	}
 }
@@ -469,8 +476,8 @@ class Coin extends PhyThing{
 			else if(this.ySpeed < 0 && this.ypos + this.height < 0){
 				thingstoremove.push(this);
 			}
-			this.xpos += this.xSpeed;
-			this.ypos += this.ySpeed;
+			this.xpos += this.xSpeed / regspeed;
+			this.ypos += this.ySpeed / regspeed;
 			var hitPlayer = false;
 			if(this.xpos < player.xpos + player.width && this.ypos < player.ypos + player.height && player.xpos < this.xpos + this.width && player.ypos < this.ypos + this.height){
 				hitPlayer = true;
@@ -588,8 +595,8 @@ class Player extends PhyThing{
     }
     Update(){
 		if(!paused){
-			this.xpos += this.xSpeed;
-			this.ypos += this.ySpeed;
+			this.xpos += this.xSpeed / regspeed;
+			this.ypos += this.ySpeed / regspeed;
 
 			var xdelta = 0;
 			var ydelta = 0;
@@ -621,37 +628,38 @@ class Player extends PhyThing{
 					ydelta -= 0.1;
 				}
 			}
-			this.xSpeed += xdelta * this.power;
-			this.ySpeed += ydelta * this.power;
-			
-			if(xdelta > 0){
-				if(ydelta > 0){
-					thingstoadd.push(new Exhaust(this.xpos + this.width/2, this.ypos + this.height / 2, -0.707, -0.707, this.xSpeed, this.ySpeed, this.exhaustweight));
+			this.xSpeed += xdelta * this.power / regspeed;
+			this.ySpeed += ydelta * this.power / regspeed;
+			if(numframes % regspeed == 0){
+				if(xdelta > 0){
+					if(ydelta > 0){
+						thingstoadd.push(new Exhaust(this.xpos + this.width/2, this.ypos + this.height / 2, -0.707, -0.707, this.xSpeed, this.ySpeed, this.exhaustweight));
+					}
+					else if(ydelta < 0){
+						thingstoadd.push(new Exhaust(this.xpos + this.width/2, this.ypos + this.height / 2, -0.707, 0.707, this.xSpeed, this.ySpeed, this.exhaustweight));
+					}
+					else{
+						thingstoadd.push(new Exhaust(this.xpos + this.width/2, this.ypos + this.height / 2, -1, 0, this.xSpeed, this.ySpeed, this.exhaustweight));
+					}
 				}
-				else if(ydelta < 0){
-					thingstoadd.push(new Exhaust(this.xpos + this.width/2, this.ypos + this.height / 2, -0.707, 0.707, this.xSpeed, this.ySpeed, this.exhaustweight));
+				else if(xdelta < 0){
+					if(ydelta > 0){
+						thingstoadd.push(new Exhaust(this.xpos + this.width/2, this.ypos + this.height / 2, 0.707, -0.707, this.xSpeed, this.ySpeed, this.exhaustweight));
+					}
+					else if(ydelta < 0){
+						thingstoadd.push(new Exhaust(this.xpos + this.width/2, this.ypos + this.height / 2, 0.707, 0.707, this.xSpeed, this.ySpeed, this.exhaustweight));
+					}
+					else{
+						thingstoadd.push(new Exhaust(this.xpos + this.width/2, this.ypos + this.height / 2, 1, 0, this.xSpeed, this.ySpeed, this.exhaustweight));
+					}
 				}
 				else{
-					thingstoadd.push(new Exhaust(this.xpos + this.width/2, this.ypos + this.height / 2, -1, 0, this.xSpeed, this.ySpeed, this.exhaustweight));
-				}
-			}
-			else if(xdelta < 0){
-				if(ydelta > 0){
-					thingstoadd.push(new Exhaust(this.xpos + this.width/2, this.ypos + this.height / 2, 0.707, -0.707, this.xSpeed, this.ySpeed, this.exhaustweight));
-				}
-				else if(ydelta < 0){
-					thingstoadd.push(new Exhaust(this.xpos + this.width/2, this.ypos + this.height / 2, 0.707, 0.707, this.xSpeed, this.ySpeed, this.exhaustweight));
-				}
-				else{
-					thingstoadd.push(new Exhaust(this.xpos + this.width/2, this.ypos + this.height / 2, 1, 0, this.xSpeed, this.ySpeed, this.exhaustweight));
-				}
-			}
-			else{
-				if(ydelta > 0){
-					thingstoadd.push(new Exhaust(this.xpos + this.width/2, this.ypos + this.height / 2, 0, -1, this.xSpeed, this.ySpeed, this.exhaustweight));
-				}
-				else if(ydelta < 0){
-					thingstoadd.push(new Exhaust(this.xpos + this.width/2, this.ypos + this.height / 2, 0, 1, this.xSpeed, this.ySpeed, this.exhaustweight));
+					if(ydelta > 0){
+						thingstoadd.push(new Exhaust(this.xpos + this.width/2, this.ypos + this.height / 2, 0, -1, this.xSpeed, this.ySpeed, this.exhaustweight));
+					}
+					else if(ydelta < 0){
+						thingstoadd.push(new Exhaust(this.xpos + this.width/2, this.ypos + this.height / 2, 0, 1, this.xSpeed, this.ySpeed, this.exhaustweight));
+					}
 				}
 			}
 			
@@ -676,5 +684,3 @@ class Player extends PhyThing{
         context.fillRect(this.xpos, this.ypos, this.width, this.height);
     }
 }
-
-loop();
