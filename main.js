@@ -71,6 +71,10 @@ var time;
 
 var shop;
 
+var gameoverscreen;
+
+var dead;
+
 document.addEventListener('keydown', function(event) {
 	if(!keys.includes(17)){ //Allow ctrl key
 		event.preventDefault();
@@ -152,6 +156,9 @@ function loop(){
 	if(shop != null){
 		shop.Update();
 	}
+    if(gameoverscreen != null){
+        gameoverscreen.Update();
+    }
     for(i=0;i<thingstoremove.length;i++){
 		//console.log(thingstoremove[i]);
         things.splice(things.indexOf(thingstoremove[i]), 1);
@@ -271,8 +278,16 @@ function keypressed(key){
 	return (keys.includes(key) && !keyslastupdate.includes(key));
 }
 
+function deathscreen(){
+    paused = true;
+    dead = true;
+    gameoverscreen = new GameOverManager();
+}
+
 function reset(){
     playing = true;
+    dead = false;
+    paused = false;
     player = new Player(canvas.width / 2, canvas.height / 2);
     things = [];
     timer = 0;
@@ -289,6 +304,7 @@ function homereset(){
 	player = null;
     thingstoremove = [];
 	shop = null;
+    gameoverscreen = null;
     doreset = false;
     things.push(new HomeManager());
 }
@@ -399,7 +415,7 @@ class Asteroid extends PhyThing{
 				hitPlayer = true;
 			}
 			if(hitPlayer){
-				doreset = true;
+				deathscreen();
 			}
 		}
         context.fillStyle = this.color;
@@ -523,7 +539,7 @@ class HomeManager extends Thing{
             }
             context.fillText("n to change mode", 50 * widthfactor, 90 * widthfactor);
             context.fillText("(t for tips)", 50 * widthfactor, 200 * widthfactor);
-            if(keys.includes(startKey)){
+            if(keypressed(startKey)){
                reset();
             }
         }
@@ -543,10 +559,10 @@ class ShopManager extends Thing{
 		this.visible = false;
     }
     Update(){
-		if(keypressed(shopKey)){
+		if(keypressed(shopKey) && !dead){
 			this.visible = !this.visible;
+            paused = this.visible;
 		}
-		paused = this.visible;
 		if(this.visible){
 			context.fillStyle = "green";
 			context.font = (96 * widthfactor).toString()+"px Courier New";
@@ -582,6 +598,24 @@ class ShopManager extends Thing{
 				player.power -= 0.1;
 			}
 		}
+	}
+}
+
+class GameOverManager extends Thing{
+    constructor(){
+        super(0, 0, 0, 0);
+		this.visible = false;
+    }
+    Update(){
+        context.fillStyle = "green";
+        context.font = (96 * widthfactor).toString()+"px Courier New";
+        context.fillText("u died xd", canvas.width / 2, 100 * widthfactor);
+
+        context.font = (48 * widthfactor).toString()+"px Courier New";
+        context.fillText("Space to continue ", 100 * widthfactor, 200 * widthfactor);
+        if(keys.includes(startKey)){
+            doreset = true;
+        }
 	}
 }
     
