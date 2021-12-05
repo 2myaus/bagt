@@ -535,7 +535,7 @@ class HomeManager extends Thing{
                 context.fillText("Normal", 150 * widthfactor, 50 * widthfactor);
             }
             else if(mode == 2){
-                context.fillText("Inverted (stupid baka mode)", 150 * widthfactor, 50 * widthfactor);
+                context.fillText("Inverted", 150 * widthfactor, 50 * widthfactor);
             }
             context.fillText("n to change mode", 50 * widthfactor, 90 * widthfactor);
             context.fillText("(t for tips)", 50 * widthfactor, 200 * widthfactor);
