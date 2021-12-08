@@ -17,7 +17,18 @@ var thingstoremove = [];
 
 var keys = [];
 var keyslastupdate = [];
-    
+
+var mouseX = 0;
+var mouseY = 0;
+
+var MB1Down = false;
+var MB2Down = false;
+var MB3Down = false;
+
+var MB1Pressed = false;
+var MB2Pressed = false;
+var MB3Pressed = false;
+
 var updatespersecond = 180;
 var regspeed = 3; //Basically how much faster the current updates per second are than 60, so 120 would be regspeed of 2, 180 3, etc.
 
@@ -62,10 +73,10 @@ var dead;
 
 var paused = false;
 
-var upPressed = false;
-var downPressed = false;
-var leftPressed = false;
-var rightPressed = false;
+var upKeyDown = false;
+var downKeyDown = false;
+var leftKeyDown = false;
+var rightKeyDown = false;
 
 //Game instance vars
 var player;
@@ -88,20 +99,24 @@ document.addEventListener('keyup', function(event) {
         keys.splice(keys.indexOf(event.keyCode), 1);
     }
 });
+document.addEventListener('mousemove', function(event){
+	mouseX = event.clientX;
+	mouseY = event.clientY;
+});
 
 //Main loop
 setInterval(loop, 1000/updatespersecond);
 function loop(){
 	widthfactor = canvas.width / virtwidth;
-	upPressed = false;
-	downPressed = false;
-	leftPressed = false;
-	rightPressed = false;
+	upKeyDown = false;
+	downKeyDown = false;
+	leftKeyDown = false;
+	rightKeyDown = false;
 	for(i=0;i<keys.length;i++){
-		if(upKeys.includes(keys[i])){upPressed = true;}
-		if(downKeys.includes(keys[i])){downPressed = true;}
-		if(leftKeys.includes(keys[i])){leftPressed = true;}
-		if(rightKeys.includes(keys[i])){rightPressed = true;}
+		if(upKeys.includes(keys[i])){upKeyDown = true;}
+		if(downKeys.includes(keys[i])){downKeyDown = true;}
+		if(leftKeys.includes(keys[i])){leftKeyDown = true;}
+		if(rightKeys.includes(keys[i])){rightKeyDown = true;}
 	}
     if(canvas == c1){
         canvas = c2;
@@ -348,6 +363,7 @@ class Player extends PhyThing{
 		this.exhaustweight = 0.01;
 		this.pointmulti = 1;
 		this.power = 1;
+		this.shielded = false;
     }
     Update(){
 		if(!paused){
@@ -357,30 +373,30 @@ class Player extends PhyThing{
 			var xdelta = 0;
 			var ydelta = 0;
 			if(mode == 1){
-				if(leftPressed){
+				if(leftKeyDown){
 					xdelta -= 0.1;
 				}
-				if(rightPressed){
+				if(rightKeyDown){
 					xdelta += 0.1;
 				}
-				if(upPressed){
+				if(upKeyDown){
 					ydelta -= 0.1;
 				}
-				if(downPressed){
+				if(downKeyDown){
 					ydelta += 0.1;
 				}
 			}
 			else if(mode == 2){
-				if(leftPressed){
+				if(leftKeyDown){
 					xdelta += 0.1;
 				}
-				if(rightPressed){
+				if(rightKeyDown){
 					xdelta -= 0.1;
 				}
-				if(upPressed){
+				if(upKeyDown){
 					ydelta += 0.1;
 				}
-				if(downPressed){
+				if(downKeyDown){
 					ydelta -= 0.1;
 				}
 			}
@@ -436,7 +452,11 @@ class Player extends PhyThing{
 				this.ySpeed = 0;
 			}
 		}
-        context.fillStyle = this.color;
+		if(this.shielded){
+			context.fillStyle = "cyan";
+			context.fillRect(this.xpos - 2, this.ypos - 2, this.width + 4, this.height + 4);
+		}
+		context.fillStyle = this.color;
         context.fillRect(this.xpos, this.ypos, this.width, this.height);
     }
 }
@@ -517,7 +537,13 @@ class Asteroid extends PhyThing{
 				hitPlayer = true;
 			}
 			if(hitPlayer){
-				deathscreen();
+				if(player.shielded){
+					player.shielded = false;
+					thingstoremove.push(this);
+				}
+				else{
+					deathscreen();
+				}
 			}
 		}
         context.fillStyle = this.color;
