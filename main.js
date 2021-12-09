@@ -23,9 +23,7 @@ var mouseY = 0;
 
 var MBsDownLF = [];
 
-var MBsDown = [];
-
-var MBsPressed = [];
+var MBsDown = [false, false, false];
 
 var updatespersecond = 120;
 var regspeed = updatespersecond / 60; //Basically how much faster the current updates per second are than 60, so 120 would be regspeed of 2, 180 3, etc.
@@ -48,11 +46,6 @@ const rightKeys = [68, 39];
 const shopKey = 9;
 const startKey = 32;
 const modeswapKey = 78;
-
-const exhaustupgradeKey = 69;
-const pointupgradeKey = 80;
-const powerupgradeKey = 221;
-const powerdowngradeKey = 219;
 
 var timer = 0;
 var summontime = 50;
@@ -194,15 +187,19 @@ function loop(){
 function keypressed(key){
 	return (keys.includes(key) && !keyslastupdate.includes(key));
 }
+
 function MouseInRange(xi, yi, xf, yf){
 	return (mouseX >= xi && mouseY >= yi && mouseX <= xf && mouseY <= yf);
 }
+
 function MBpressed(MB){
 	return (MBsDown[MB] && !MBsDownLF[MB]);
 }
+
 function MBpressedInRange(MB, xi, yi, xf, yf){
 	return (MBpressed(MB) && MouseInRange(xi, yi, xf, yf));
 }
+
 function MBdownInRange(MB, xi, yi, xf, yf){
 	return (MBsDown[MB] && MouseInRange(xi, yi, xf, yf));
 }
@@ -314,6 +311,7 @@ function deathscreen(){
     paused = true;
     dead = true;
     gameoverscreen = new GameOverManager();
+	//document.body.innerHTML += "<div id='adcontainer' style='position:absolute;top:"+(canvas.height/2 - 200).toString()+"px;left:"+(canvas.width/2 - 300).toString()+"px;' width='600px' height='400px'>aa</div>";
 }
 
 function reset(){
@@ -703,6 +701,9 @@ class ShopManager extends Thing{
     constructor(){
         super(0, 0, 0, 0);
 		this.visible = false;
+		this.exhaustUpgradeButton = new Button(0,0,100,60,"white");
+		this.pointUpgradeButton = new Button(0,0,100,60,"green");
+		this.thrustUpgradeButton = new Button(0,0,100,60,"red");
     }
     Update(){
 		if(keypressed(shopKey) && !dead){
@@ -710,38 +711,44 @@ class ShopManager extends Thing{
             paused = this.visible;
 		}
 		if(this.visible){
+			this.exhaustUpgradeButton.xpos = 50 * widthfactor;
+			this.pointUpgradeButton.xpos = 50 * widthfactor;
+			this.thrustUpgradeButton.xpos = 50 * widthfactor;
+			this.exhaustUpgradeButton.ypos = 170 * widthfactor;
+			this.pointUpgradeButton.ypos = 370 * widthfactor;
+			this.thrustUpgradeButton.ypos = 570 * widthfactor;
+			
+			this.exhaustUpgradeButton.Update();
+			this.pointUpgradeButton.Update();
+			this.thrustUpgradeButton.Update();
 			context.fillStyle = "green";
 			context.font = (96 * widthfactor).toString()+"px Courier New";
-			context.fillText("shop", canvas.width / 2, 100 * widthfactor);
+			context.fillText("shop", canvas.width / 2, 200 * widthfactor);
 			
 			context.font = (48 * widthfactor).toString()+"px Courier New";
-			context.fillText("Exhaust weight: "+Math.floor(player.exhaustweight * 10000).toString(), 100 * widthfactor, 200 * widthfactor);
-			context.fillText("(E to upgrade - Cost: 10000)", 100 * widthfactor, 248 * widthfactor);
+			context.fillText("Exhaust weight: "+Math.floor(player.exhaustweight * 10000).toString(), 200 * widthfactor, 200 * widthfactor);
+			context.fillText("(Cost: 10000)", 200 * widthfactor, 248 * widthfactor);
 			
-			context.fillText("Point Multiplier: "+Math.floor(player.pointmulti * 100).toString()+"%", 100 * widthfactor, 400 * widthfactor);
-			context.fillText("(P to upgrade - Cost: 10000)", 100 * widthfactor, 448 * widthfactor);
+			context.fillText("Point Multiplier: "+Math.floor(player.pointmulti * 100).toString()+"%", 200 * widthfactor, 400 * widthfactor);
+			context.fillText("(Cost: 10000)", 200 * widthfactor, 448 * widthfactor);
 			
-			context.fillText("Thrust Power Multiplier: "+Math.floor(player.power * 100).toString()+"%", 100 * widthfactor, 600 * widthfactor);
-			context.fillText("(] to upgrade - Cost: 5000)", 100 * widthfactor, 648 * widthfactor);
-			context.fillText("([ to downgrade - NO REFUND!)", 100 * widthfactor, 696 * widthfactor);
+			context.fillText("Thrust Power Multiplier: "+Math.floor(player.power * 100).toString()+"%", 200 * widthfactor, 600 * widthfactor);
+			context.fillText("(Cost: 5000)", 200 * widthfactor, 648 * widthfactor);
 			
 			
-			if(keypressed(exhaustupgradeKey) && points > 100){
+			if(this.exhaustUpgradeButton.clicked && points > 100){
 				player.exhaustweight += 0.002;
 				points -= 100;
 			}
 			
-			if(keypressed(pointupgradeKey) && points > 100){
+			if(this.pointUpgradeButton.clicked && points > 100){
 				player.pointmulti += 0.1;
 				points -= 100;
 			}
 			
-			if(keypressed(powerupgradeKey) && points > 50){
+			if(this.thrustUpgradeButton.clicked && points > 50){
 				player.power += 0.1;
 				points -= 50;
-			}
-			if(keypressed(powerdowngradeKey)){
-				player.power -= 0.1;
 			}
 		}
 	}
@@ -773,14 +780,14 @@ class Button extends Thing{
 	}
 	Update(){
 		this.clicked = false;
-		if(MBpressedInRange(0, this.x, this.y, this.x + this.width, this.y + this.height)){
+		if(MBpressedInRange(0, this.xpos, this.ypos, this.xpos + this.width * widthfactor, this.ypos + this.height * widthfactor)){
 			this.clicked = true;
 		}
 		context.fillStyle = this.color;
-        context.fillRect(this.xpos, this.ypos, this.width, this.height);
-		if(MBdownInRange(0, this.xpos, this.ypos, this.xpos + this.width, this.ypos + this.height)){
+        context.fillRect(this.xpos, this.ypos, this.width * widthfactor, this.height * widthfactor);
+		if(MBdownInRange(0, this.xpos, this.ypos, this.xpos + this.width * widthfactor, this.ypos + this.height * widthfactor)){
 			context.fillStyle = "rgba(0,0,0,0.4)";
-			context.fillRect(this.xpos, this.ypos, this.width, this.height);
+			context.fillRect(this.xpos, this.ypos, this.width * widthfactor, this.height * widthfactor); //Note: Use width factor as button is used in UIs
 		}
 	}
 }
