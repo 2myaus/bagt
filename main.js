@@ -151,7 +151,7 @@ function loop(){
         context.fillStyle = "white";
         context.font = (48 * widthfactor).toString()+"px Courier New";
         context.fillText(Math.floor(points * 100).toString(), 50 * widthfactor, 50 * widthfactor);
-        context.fillText(Math.floor(time / 60).toString(), canvas.width - (50 + 32 * (Math.floor(time / 60).toString()).length) * widthfactor, 50 * widthfactor);
+        context.fillText(Math.floor(time / (60 * regspeed)).toString(), canvas.width - (50 + 32 * (Math.floor(time / 60).toString()).length) * widthfactor, 50 * widthfactor);
     }
     if(doreset){
         homereset();
