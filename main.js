@@ -21,16 +21,14 @@ var keyslastupdate = [];
 var mouseX = 0;
 var mouseY = 0;
 
-var MB1Down = false;
-var MB2Down = false;
-var MB3Down = false;
+var MBsDownLF = [];
 
-var MB1Pressed = false;
-var MB2Pressed = false;
-var MB3Pressed = false;
+var MBsDown = [];
 
-var updatespersecond = 180;
-var regspeed = 3; //Basically how much faster the current updates per second are than 60, so 120 would be regspeed of 2, 180 3, etc.
+var MBsPressed = [];
+
+var updatespersecond = 120;
+var regspeed = updatespersecond / 60; //Basically how much faster the current updates per second are than 60, so 120 would be regspeed of 2, 180 3, etc.
 
 var virtwidth = 1920;
 var widthfactor = 1;
@@ -38,7 +36,7 @@ var widthfactor = 1;
 //Game vars
 var coinchance = 0.1;
 var bhchance = 0.1;
-var bhstrength = 0.03;
+var bhstrength = 0.02;
     
 var mode = 1; //1 is normal, 2 is inverted
 
@@ -102,6 +100,12 @@ document.addEventListener('keyup', function(event) {
 document.addEventListener('mousemove', function(event){
 	mouseX = event.clientX;
 	mouseY = event.clientY;
+});
+document.addEventListener('mousedown', function(event){
+	MBsDown[event.button] = true;
+});
+document.addEventListener('mouseup', function(event){
+	MBsDown[event.button] = false;
 });
 
 //Main loop
@@ -182,12 +186,16 @@ function loop(){
     }
     thingstoadd = [];
 	keyslastupdate = keys.slice();
+	MBsDownLF = MBsDown.slice();
 	numframes++;
 }
 
 //Misc utility functions
 function keypressed(key){
 	return (keys.includes(key) && !keyslastupdate.includes(key));
+}
+function MBpressed(MB){
+	return (MBsDown.includes(key) && !MBsDownLF.includes(key));
 }
 
 //Misc game functions
