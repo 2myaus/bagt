@@ -194,8 +194,17 @@ function loop(){
 function keypressed(key){
 	return (keys.includes(key) && !keyslastupdate.includes(key));
 }
+function MouseInRange(xi, yi, xf, yf){
+	return (mouseX >= xi && mouseY >= yi && mouseX <= xf && mouseY <= yf);
+}
 function MBpressed(MB){
-	return (MBsDown.includes(key) && !MBsDownLF.includes(key));
+	return (MBsDown[MB] && !MBsDownLF[MB]);
+}
+function MBpressedInRange(MB, xi, yi, xf, yf){
+	return (MBpressed(MB) && MouseInRange(xi, yi, xf, yf));
+}
+function MBdownInRange(MB, xi, yi, xf, yf){
+	return (MBsDown[MB] && MouseInRange(xi, yi, xf, yf));
 }
 
 //Misc game functions
@@ -753,5 +762,25 @@ class GameOverManager extends Thing{
         if(keys.includes(startKey)){
             doreset = true;
         }
+	}
+}
+
+class Button extends Thing{
+	constructor(x, y, w, h, color){
+		super(x, y, w, h);
+		this.color = color;
+		this.clicked = false;
+	}
+	Update(){
+		this.clicked = false;
+		if(MBpressedInRange(0, this.x, this.y, this.x + this.width, this.y + this.height)){
+			this.clicked = true;
+		}
+		context.fillStyle = this.color;
+        context.fillRect(this.xpos, this.ypos, this.width, this.height);
+		if(MBdownInRange(0, this.xpos, this.ypos, this.xpos + this.width, this.ypos + this.height)){
+			context.fillStyle = "rgba(0,0,0,0.4)";
+			context.fillRect(this.xpos, this.ypos, this.width, this.height);
+		}
 	}
 }
