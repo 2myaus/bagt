@@ -250,7 +250,7 @@ function summonAsteroid(){
 
         toAdd = new Asteroid(setx, sety, setxs, setys);
     }
-    else if(BHexists || Math.random() > bhchance || time < 6000){
+    else if(BHexists || Math.random() > bhchance || time < 6000 * regspeed){
         if(side == 1){
             setx = -20; //keep at coin size
             sety = Math.random() * canvas.height;
