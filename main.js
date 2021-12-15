@@ -50,6 +50,8 @@ const modeswapKey = 78;
 var timer = 0;
 var summontime = 50;
 
+var BHexists = false;
+
 var playing = false;
 
 var doreset = true;
@@ -248,7 +250,7 @@ function summonAsteroid(){
 
         toAdd = new Asteroid(setx, sety, setxs, setys);
     }
-    else if(Math.random() > bhchance || time < 6000){
+    else if(BHexists || Math.random() > bhchance || time < 6000){
         if(side == 1){
             setx = -20; //keep at coin size
             sety = Math.random() * canvas.height;
@@ -572,20 +574,25 @@ class BlackHole extends PhyThing{
         this.xSpeed = sethor;
         this.ySpeed = setver;
         this.color = "white";
+        BHexists = true;
     }
     Update(){
 		if(!paused){
 			if(this.xSpeed > 0 && this.xpos > canvas.width){
 				thingstoremove.push(this);
+                BHexists = false;
 			}
 			else if(this.xSpeed < 0 && this.xpos + this.width < 0){
 				thingstoremove.push(this);
+                BHexists = false;
 			}
 			if(this.ySpeed > 0 && this.ypos > canvas.height){
 				thingstoremove.push(this);
+                BHexists = false;
 			}
 			else if(this.ySpeed < 0 && this.ypos + this.height < 0){
 				thingstoremove.push(this);
+                BHexists = false;
 			}
 			this.xpos += this.xSpeed / regspeed;
 			this.ypos += this.ySpeed / regspeed;
