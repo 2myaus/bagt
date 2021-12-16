@@ -36,6 +36,8 @@ var coinchance = 0.1;
 var bhchance = 0.1;
 var bhstrength = 0.02;
     
+var summonTimeMulti = 200;
+
 var mode = 1; //1 is normal, 2 is inverted
 
 const upKeys = [87, 38];
@@ -212,7 +214,7 @@ function summonAsteroid(){
     
     //if(points > hiscore){hiscore = points;}
     if(summontime > 8){
-        summontime = summontime * (1 - (1 / widthfactor) / 100);
+        summontime = summontime * (1 - (1 / widthfactor) / summonTimeMulti);
     }
     
     var side = Math.floor(Math.random() * 4) + 1;
