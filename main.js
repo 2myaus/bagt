@@ -32,12 +32,11 @@ var virtwidth = 1920;
 var widthfactor = 1;
 
 //Game vars
+var summonTimeMulti = 200;
 var coinchance = 0.1;
 var bhchance = 0.1;
 var bhstrength = 0.02;
     
-var summonTimeMulti = 200;
-
 var mode = 1; //1 is normal, 2 is inverted
 
 const upKeys = [87, 38];
@@ -154,7 +153,7 @@ function loop(){
 		}
         context.fillStyle = "white";
         context.font = (48 * widthfactor).toString()+"px Courier New";
-        context.fillText(Math.floor(points * 100).toString(), 50 * widthfactor, 50 * widthfactor);
+        context.fillText(Math.floor(points).toString(), 50 * widthfactor, 50 * widthfactor);
         context.fillText(Math.floor(time / (60 * regspeed)).toString(), canvas.width - (50 + 32 * (Math.floor(time / 60).toString()).length) * widthfactor, 50 * widthfactor);
     }
     if(doreset){
@@ -215,6 +214,9 @@ function summonAsteroid(){
     //if(points > hiscore){hiscore = points;}
     if(summontime > 8){
         summontime = summontime * (1 - (1 / widthfactor) / summonTimeMulti);
+    }
+    else{
+        summontime = 8;
     }
     
     var side = Math.floor(Math.random() * 4) + 1;
@@ -380,7 +382,7 @@ class Player extends PhyThing{
         super(setx, sety, 15, 15);
         this.color = "red";
 		this.exhaustweight = 0.01;
-		this.pointmulti = 1;
+		this.pointmulti = 100;
 		this.power = 1;
 		this.shielded = false;
     }
@@ -651,7 +653,7 @@ class Coin extends PhyThing{
 				hitPlayer = true;
 			}
 			if(hitPlayer){
-				points += 10 * player.pointmulti;
+				points += 1000 * (player.pointmulti / 100);
 				thingstoremove.push(this);
 			}
 		}
@@ -713,6 +715,7 @@ class ShopManager extends Thing{
 		this.exhaustUpgradeButton = new Button(0,0,100,60,"white");
 		this.pointUpgradeButton = new Button(0,0,100,60,"green");
 		this.thrustUpgradeButton = new Button(0,0,100,60,"red");
+        this.shieldUpgradeButton = new Button(0,0,100,60,"blue");
     }
     Update(){
 		if(keypressed(shopKey) && !dead){
@@ -723,13 +726,16 @@ class ShopManager extends Thing{
 			this.exhaustUpgradeButton.xpos = 50 * widthfactor;
 			this.pointUpgradeButton.xpos = 50 * widthfactor;
 			this.thrustUpgradeButton.xpos = 50 * widthfactor;
+            this.shieldUpgradeButton.xpos = 50 * widthfactor;
 			this.exhaustUpgradeButton.ypos = 170 * widthfactor;
 			this.pointUpgradeButton.ypos = 370 * widthfactor;
 			this.thrustUpgradeButton.ypos = 570 * widthfactor;
+            this.shieldUpgradeButton.ypos = 770 * widthfactor;
 			
 			this.exhaustUpgradeButton.Update();
 			this.pointUpgradeButton.Update();
 			this.thrustUpgradeButton.Update();
+            this.shieldUpgradeButton.Update();
 			context.fillStyle = "green";
 			context.font = (96 * widthfactor).toString()+"px Courier New";
 			context.fillText("shop", canvas.width / 2, 200 * widthfactor);
@@ -738,27 +744,35 @@ class ShopManager extends Thing{
 			context.fillText("Exhaust weight: "+Math.floor(player.exhaustweight * 10000).toString(), 200 * widthfactor, 200 * widthfactor);
 			context.fillText("(Cost: 10000)", 200 * widthfactor, 248 * widthfactor);
 			
-			context.fillText("Point Multiplier: "+Math.floor(player.pointmulti * 100).toString()+"%", 200 * widthfactor, 400 * widthfactor);
+			context.fillText("Point Multiplier: "+Math.floor(player.pointmulti).toString()+"%", 200 * widthfactor, 400 * widthfactor);
 			context.fillText("(Cost: 10000)", 200 * widthfactor, 448 * widthfactor);
 			
 			context.fillText("Thrust Power Multiplier: "+Math.floor(player.power * 100).toString()+"%", 200 * widthfactor, 600 * widthfactor);
 			context.fillText("(Cost: 5000)", 200 * widthfactor, 648 * widthfactor);
+            
+            context.fillText("Single-use shield: "+ (player.shielded ? "On" : "Off"), 200 * widthfactor, 800 * widthfactor);
+			context.fillText("(Cost: 20000)", 200 * widthfactor, 848 * widthfactor);
 			
 			
-			if(this.exhaustUpgradeButton.clicked && points > 100){
+			if(this.exhaustUpgradeButton.clicked && points >= 10000){
 				player.exhaustweight += 0.002;
-				points -= 100;
+				points -= 10000;
 			}
 			
-			if(this.pointUpgradeButton.clicked && points > 100){
-				player.pointmulti += 0.1;
-				points -= 100;
+			if(this.pointUpgradeButton.clicked && points >= 10000){
+				player.pointmulti += 10;
+				points -= 10000;
 			}
 			
-			if(this.thrustUpgradeButton.clicked && points > 50){
+			if(this.thrustUpgradeButton.clicked && points >= 5000){
 				player.power += 0.1;
-				points -= 50;
+				points -= 5000;
 			}
+            
+            if(!player.shielded && this.shieldUpgradeButton.clicked && points >= 20000){
+                player.shielded = true;
+                points -= 20000;
+            }
 		}
 	}
 }
