@@ -51,13 +51,18 @@ const modeswapKey = 78;
 var timer = 0;
 var summontime = 50;
 
+var playerColor = "red";
+var uiColor = "green";
+
 var BHexists = false;
 
 var playing = false;
 
 var doreset = true;
 
-var points = 0;
+var points = 0; //Ingame points for upgrades
+
+var coins = 0; //Home screen coins for cosmetics
 
 var numframes = 0;
 
@@ -342,6 +347,8 @@ function homereset(){
 	shop = null;
     gameoverscreen = null;
     doreset = false;
+	coins += Math.floor(points / 100);
+	points = 0;
     things.push(new HomeManager());
 }
 
@@ -380,7 +387,7 @@ class PhyThing extends Thing{
 class Player extends PhyThing{
     constructor(setx, sety){
         super(setx, sety, 15, 15);
-        this.color = "red";
+        this.color = playerColor;
 		this.exhaustweight = 0.01;
 		this.pointmulti = 100;
 		this.power = 1;
@@ -668,15 +675,8 @@ class HomeManager extends Thing{
         super(0, 0, 0, 0);
         this.screen = "home";
     }
-    SwapScreen(){
-        if(this.screen == "home"){this.screen = "tips";}
-        else if(this.screen == "tips"){this.screen = "home";}
-    }
     Update(){
-        if(keypressed(84)){
-			this.SwapScreen();
-		}
-        context.fillStyle = "green";
+        context.fillStyle = uiColor;
         context.font = (96 * widthfactor).toString()+"px Courier New";
         if(this.screen == "home"){
             context.fillText("bad", canvas.width / 2, 100 * widthfactor);
@@ -694,17 +694,60 @@ class HomeManager extends Thing{
             }
             context.fillText("n to change mode", 50 * widthfactor, 90 * widthfactor);
             context.fillText("(t for tips)", 50 * widthfactor, 200 * widthfactor);
+			if(keypressed(84)){
+				this.screen = "tips";
+			}
+			else if(keypressed(shopKey)){
+				this.screen = "shop";
+			}
             if(keypressed(startKey)){
                reset();
             }
         }
         else if(this.screen == "tips"){
+			if(keypressed(84)){
+				this.screen = "home";
+			}
             context.font = (32 * widthfactor).toString()+"px Courier New";
             context.fillText("Tip: if the screen seems to small or big to you, use the built in zoom in your browser", 50 * widthfactor, 50 * widthfactor);
             context.fillText("ctrl + or ctrl -", 50 * widthfactor, 90 * widthfactor);
 			context.fillText("Tip: Press TAB to open the shop, where you can spend your points", 50 * widthfactor, 130 * widthfactor);
 			context.fillText("Tip: Coins are yellow squares, slightly smaller than asteroids. They give you points!", 50 * widthfactor, 170 * widthfactor);
+			context.fillText("Tip: Your points are transferred into Red Coins when you die, which you can spend on cosmetics.", 50 * widthfactor, 210 * widthfactor);
         }
+		else if(this.screen == "shop"){
+			if(this.colorChangeButton == null){
+				this.colorChangeButton = new Button(0,0,100,60,uiColor);
+			}
+			this.colorChangeButton.xpos = 50 * widthfactor;
+			this.colorChangeButton.ypos = 170 * widthfactor;
+			this.colorChangeButton.color = playerColor;
+			this.colorChangeButton.Update();
+			context.fillStyle = uiColor;
+			context.font = (48 * widthfactor).toString()+"px Courier New";
+			context.fillText("shop", canvas.width / 2, 100 * widthfactor);
+			context.fillText("Change player color to random", 200 * widthfactor, 200 * widthfactor);
+			context.fillText("(Cost: 200 RC)", 200 * widthfactor, 248 * widthfactor);
+			
+			context.fillStyle = "red";
+			context.fillRect(1750 * widthfactor, 100 * widthfactor, 20 * widthfactor, 20 * widthfactor);
+			context.font = (32 * widthfactor).toString()+"px Courier New";
+			context.fillText(coins.toString(), 1790 * widthfactor, 120 * widthfactor);
+			if(this.colorChangeButton.clicked){
+				if(coins >= 200){
+					var randcolor = Math.random() * 10000;
+					var frequency = 0.005;
+					var setr = Math.sin(frequency * randcolor + 0) * (127) + 128;
+					var setg = Math.sin(frequency * randcolor + 1) * (127) + 128;
+					var setb = Math.sin(frequency * randcolor + 3) * (127) + 128;
+					playerColor = "rgb("+setr.toString()+", "+setg.toString()+", "+setb.toString()+")";
+					coins -= 200;
+				}
+			}
+			if(keypressed(shopKey)){
+				this.screen = "home"
+			}
+		}
     }
 }
 
@@ -736,7 +779,7 @@ class ShopManager extends Thing{
 			this.pointUpgradeButton.Update();
 			this.thrustUpgradeButton.Update();
             this.shieldUpgradeButton.Update();
-			context.fillStyle = "green";
+			context.fillStyle = uiColor;
 			context.font = (96 * widthfactor).toString()+"px Courier New";
 			context.fillText("shop", canvas.width / 2, 200 * widthfactor);
 			
@@ -783,7 +826,7 @@ class GameOverManager extends Thing{
 		this.visible = false;
     }
     Update(){
-        context.fillStyle = "green";
+        context.fillStyle = uiColor;
         context.font = (96 * widthfactor).toString()+"px Courier New";
         context.fillText("u died xd", canvas.width / 2, 100 * widthfactor);
 
