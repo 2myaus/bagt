@@ -600,13 +600,13 @@ class BlackHole extends PhyThing{
 			}
 			this.xpos += this.xSpeed / regspeed;
 			this.ypos += this.ySpeed / regspeed;
+			this.centerx = this.xpos + this.width / 2;
+			this.centery = this.ypos + this.height / 2;
+			for(var iter=0;iter<things.length;iter++){
+				this.Accelthing(things[iter]);
+			}
+			this.Accelthing(player);
 		}
-		this.centerx = this.xpos + this.width / 2;
-		this.centery = this.ypos + this.height / 2;
-		for(var iter=0;iter<things.length;iter++){
-			this.Accelthing(things[iter]);
-		}
-		this.Accelthing(player);
         context.fillStyle = this.color;
         context.fillRect(this.xpos, this.ypos, this.width, this.height);
 		context.fillStyle = "black";
