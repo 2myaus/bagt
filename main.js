@@ -392,12 +392,17 @@ class Player extends PhyThing{
 		this.pointmulti = 100;
 		this.power = 1;
 		this.shielded = false;
+        this.health = 1000;
     }
     Update(){
 		if(!paused){
 			this.xpos += this.xSpeed / regspeed;
 			this.ypos += this.ySpeed / regspeed;
 
+            if(this.health <= 0){
+                deathscreen();
+            }
+            
 			var xdelta = 0;
 			var ydelta = 0;
 			if(mode == 1){
@@ -486,6 +491,8 @@ class Player extends PhyThing{
 		}
 		context.fillStyle = this.color;
         context.fillRect(this.xpos, this.ypos, this.width, this.height);
+        context.fillStyle = uiColor;
+        //Draw health bar
     }
 }
 
@@ -570,7 +577,10 @@ class Asteroid extends PhyThing{
 					thingstoremove.push(this);
 				}
 				else{
-					deathscreen();
+					//deathscreen();
+                    player.health -= (Math.abs(player.xSpeed - this.xSpeed)) * 8;
+                    player.health -= (Math.abs(player.ySpeed - this.ySpeed)) * 8;
+                    thingstoremove.push(this);
 				}
 			}
 		}
