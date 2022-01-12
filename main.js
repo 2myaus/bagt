@@ -25,18 +25,22 @@ var MBsDownLF = [];
 
 var MBsDown = [false, false, false];
 
-var updatespersecond = 120;
-var regspeed = updatespersecond / 60; //Basically how much faster the current updates per second are than 60, so 120 would be regspeed of 2, 180 3, etc.
+//var updatespersecond = 120;
+var regspeed = 1;//updatespersecond / 60; //Basically how much faster the current updates per second are than 60, so 120 would be regspeed of 2, 180 3, etc.
 
 var virtwidth = 1920;
 var widthfactor = 1;
 
 //Game vars
+var minSummonTime = 12;
+
 var summonTimeMulti = 200;
 var coinchance = 0.1;
 var bhchance = 0.1;
 var bhstrength = 0.02;
     
+var summontime = 50;
+
 var mode = 1; //1 is normal, 2 is inverted
 
 const upKeys = [87, 38];
@@ -49,7 +53,6 @@ const startKey = 32;
 const modeswapKey = 78;
 
 var timer = 0;
-var summontime = 50;
 
 var playerColor = "red";
 var uiColor = "green";
@@ -110,7 +113,9 @@ document.addEventListener('mouseup', function(event){
 });
 
 //Main loop
-setInterval(loop, 1000/updatespersecond);
+//setInterval(loop, 1000/updatespersecond);
+requestAnimationFrame(loop);
+
 function loop(){
 	widthfactor = canvas.width / virtwidth;
 	upKeyDown = false;
@@ -189,6 +194,7 @@ function loop(){
 	keyslastupdate = keys.slice();
 	MBsDownLF = MBsDown.slice();
 	numframes++;
+    requestAnimationFrame(loop);
 }
 
 //Misc utility functions
@@ -217,11 +223,11 @@ function summonAsteroid(){
     points += (1/widthfactor) * player.pointmulti;
     
     //if(points > hiscore){hiscore = points;}
-    if(summontime > 8){
+    if(summontime > minSummonTime){
         summontime = summontime * (1 - (1 / widthfactor) / summonTimeMulti);
     }
     else{
-        summontime = 8;
+        summontime = minSummonTime;
     }
     
     var side = Math.floor(Math.random() * 4) + 1;
@@ -400,6 +406,7 @@ class Player extends PhyThing{
 			this.ypos += this.ySpeed / regspeed;
 
             if(this.health <= 0){
+                this.health = 0;
                 deathscreen();
             }
             
@@ -491,8 +498,10 @@ class Player extends PhyThing{
 		}
 		context.fillStyle = this.color;
         context.fillRect(this.xpos, this.ypos, this.width, this.height);
-        context.fillStyle = uiColor;
-        //Draw health bar
+        context.fillStyle = "rgba(255,0,0,0.5)";
+        context.fillRect(canvas.width / 2 - 500 * widthfactor, 20 * widthfactor, 1000 * widthfactor, 20 * widthfactor);
+        context.fillStyle = "rgba(0,255,0,0.5)";
+        context.fillRect(canvas.width / 2 - (this.health * widthfactor) / 2, 20 * widthfactor, this.health * widthfactor, 20 * widthfactor);
     }
 }
 
@@ -578,8 +587,10 @@ class Asteroid extends PhyThing{
 				}
 				else{
 					//deathscreen();
-                    player.health -= (Math.abs(player.xSpeed - this.xSpeed)) * 8;
-                    player.health -= (Math.abs(player.ySpeed - this.ySpeed)) * 8;
+                    player.health -= (Math.abs(player.xSpeed - this.xSpeed)) * 80;
+                    player.health -= (Math.abs(player.ySpeed - this.ySpeed)) * 80;
+                    player.xSpeed += this.xSpeed / 2;
+                    player.ySpeed += this.ySpeed / 2;
                     thingstoremove.push(this);
 				}
 			}
@@ -624,10 +635,6 @@ class BlackHole extends PhyThing{
 			}
 			this.Accelthing(player);
 		}
-        context.fillStyle = this.color;
-        context.fillRect(this.xpos, this.ypos, this.width, this.height);
-		context.fillStyle = "black";
-        context.fillRect(this.xpos + 2, this.ypos + 2, this.width - 4, this.height - 4);
     }
 	Accelthing(myThing){
 		if(myThing instanceof Asteroid || myThing instanceof Coin || myThing instanceof Player || myThing instanceof Exhaust){
@@ -813,7 +820,7 @@ class ShopManager extends Thing{
 			}
 			
 			if(this.pointUpgradeButton.clicked && points >= 10000){
-				player.pointmulti += 10;
+				player.pointmulti += 20;
 				points -= 10000;
 			}
 			
