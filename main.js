@@ -1,11 +1,10 @@
 //HTML Stuff
 
 document.body.innerHTML += "<canvas id='gameCanvas' style='position:absolute;top:0;left:0;' width='100%' height='100%'></canvas>";
-document.body.innerHTML += "<canvas id='gameCanvas2' style='position:absolute;top:0;left:0;' width='100%' height='100%'></canvas>";
+document.body.style.background = "black";
 
 //HTML Constants
 const c1 = document.getElementById("gameCanvas");
-const c2 = document.getElementById("gameCanvas2");
 
 //Engine vars
 var canvas = c1;
@@ -25,8 +24,7 @@ var MBsDownLF = [];
 
 var MBsDown = [false, false, false];
 
-//var updatespersecond = 120;
-var regspeed = 1;//updatespersecond / 60; //Basically how much faster the current updates per second are than 60, so 120 would be regspeed of 2, 180 3, etc.
+var regspeed = 1; //Basically how much faster the current updates per second are than 60, so 120 would be regspeed of 2, 180 3, etc.
 
 var virtwidth = 1920;
 var widthfactor = 1;
@@ -128,16 +126,6 @@ function loop(){
 		if(leftKeys.includes(keys[i])){leftKeyDown = true;}
 		if(rightKeys.includes(keys[i])){rightKeyDown = true;}
 	}
-    if(canvas == c1){
-        canvas = c2;
-        c2.style.visibility = "hidden";
-        c1.style.visibility = "visible";
-    }
-    else if(canvas == c2){
-        canvas = c1;
-        c1.style.visibility = "hidden";
-        c2.style.visibility = "visible";
-    }
 	if(keypressed(modeswapKey)){
 		if(mode == 1){
 			mode = 2;
@@ -147,11 +135,15 @@ function loop(){
 		}
 	}
     context = canvas.getContext("2d");
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    if(canvas.width != window.innerWidth){
+        canvas.width = window.innerWidth;
+    }
+    if(canvas.height != window.innerHeight){
+        canvas.height = window.innerHeight;
+    }
     context.clearRect(0, 0, canvas.width, canvas.height);
-    context.fillStyle = "black";
-    context.fillRect(0, 0, canvas.width, canvas.height)
+    /*context.fillStyle = "black";
+    context.fillRect(0, 0, canvas.width, canvas.height)*/
     if(playing){
 		if(!paused){
 			time++;
@@ -399,8 +391,18 @@ class Player extends PhyThing{
 		this.power = 1;
 		this.shielded = false;
         this.health = 1000;
+        this.exhausts = [];
+        this.exhauststoadd = [];
+        this.exhauststoremove = [];
     }
     Update(){
+        for(var i=0;i<this.exhauststoremove.length;i++){
+            this.exhausts.splice(this.exhausts.indexOf(this.exhauststoremove[i]), 1);
+        }
+        this.exhauststoremove = [];
+        for(var i=0;i<this.exhausts.length;i++){
+            this.exhausts[i].Update();
+        }
 		if(!paused){
 			this.xpos += this.xSpeed / regspeed;
 			this.ypos += this.ySpeed / regspeed;
@@ -445,32 +447,32 @@ class Player extends PhyThing{
 			if(numframes % regspeed == 0){
 				if(xdelta > 0){
 					if(ydelta > 0){
-						thingstoadd.push(new Exhaust(this.xpos + this.width/2, this.ypos + this.height / 2, -0.707, -0.707, this.xSpeed, this.ySpeed, this.exhaustweight));
+						this.exhausts.push(new Exhaust(this.xpos + this.width/2, this.ypos + this.height / 2, -0.707, -0.707, this.xSpeed, this.ySpeed, this.exhaustweight));
 					}
 					else if(ydelta < 0){
-						thingstoadd.push(new Exhaust(this.xpos + this.width/2, this.ypos + this.height / 2, -0.707, 0.707, this.xSpeed, this.ySpeed, this.exhaustweight));
+						this.exhausts.push(new Exhaust(this.xpos + this.width/2, this.ypos + this.height / 2, -0.707, 0.707, this.xSpeed, this.ySpeed, this.exhaustweight));
 					}
 					else{
-						thingstoadd.push(new Exhaust(this.xpos + this.width/2, this.ypos + this.height / 2, -1, 0, this.xSpeed, this.ySpeed, this.exhaustweight));
+						this.exhausts.push(new Exhaust(this.xpos + this.width/2, this.ypos + this.height / 2, -1, 0, this.xSpeed, this.ySpeed, this.exhaustweight));
 					}
 				}
 				else if(xdelta < 0){
 					if(ydelta > 0){
-						thingstoadd.push(new Exhaust(this.xpos + this.width/2, this.ypos + this.height / 2, 0.707, -0.707, this.xSpeed, this.ySpeed, this.exhaustweight));
+						this.exhausts.push(new Exhaust(this.xpos + this.width/2, this.ypos + this.height / 2, 0.707, -0.707, this.xSpeed, this.ySpeed, this.exhaustweight));
 					}
 					else if(ydelta < 0){
-						thingstoadd.push(new Exhaust(this.xpos + this.width/2, this.ypos + this.height / 2, 0.707, 0.707, this.xSpeed, this.ySpeed, this.exhaustweight));
+						this.exhausts.push(new Exhaust(this.xpos + this.width/2, this.ypos + this.height / 2, 0.707, 0.707, this.xSpeed, this.ySpeed, this.exhaustweight));
 					}
 					else{
-						thingstoadd.push(new Exhaust(this.xpos + this.width/2, this.ypos + this.height / 2, 1, 0, this.xSpeed, this.ySpeed, this.exhaustweight));
+						this.exhausts.push(new Exhaust(this.xpos + this.width/2, this.ypos + this.height / 2, 1, 0, this.xSpeed, this.ySpeed, this.exhaustweight));
 					}
 				}
 				else{
 					if(ydelta > 0){
-						thingstoadd.push(new Exhaust(this.xpos + this.width/2, this.ypos + this.height / 2, 0, -1, this.xSpeed, this.ySpeed, this.exhaustweight));
+						this.exhausts.push(new Exhaust(this.xpos + this.width/2, this.ypos + this.height / 2, 0, -1, this.xSpeed, this.ySpeed, this.exhaustweight));
 					}
 					else if(ydelta < 0){
-						thingstoadd.push(new Exhaust(this.xpos + this.width/2, this.ypos + this.height / 2, 0, 1, this.xSpeed, this.ySpeed, this.exhaustweight));
+						this.exhausts.push(new Exhaust(this.xpos + this.width/2, this.ypos + this.height / 2, 0, 1, this.xSpeed, this.ySpeed, this.exhaustweight));
 					}
 				}
 			}
@@ -516,16 +518,16 @@ class Exhaust extends PhyThing{
     Update(){
 		if(!paused){
 			if(this.xSpeed > 0 && this.xpos > canvas.width){
-				thingstoremove.push(this);
+				player.exhauststoremove.push(this);
 			}
 			else if(this.xSpeed < 0 && this.xpos + this.width < 0){
-				thingstoremove.push(this);
+				player.exhauststoremove.push(this);
 			}
 			if(this.ySpeed > 0 && this.ypos > canvas.height){
-				thingstoremove.push(this);
+				player.exhauststoremove.push(this);
 			}
 			else if(this.ySpeed < 0 && this.ypos + this.height < 0){
-				thingstoremove.push(this);
+				player.exhauststoremove.push(this);
 			}
 			this.xpos += this.xSpeed / regspeed;
 			this.ypos += this.ySpeed / regspeed;
@@ -545,7 +547,7 @@ class Exhaust extends PhyThing{
 				}
 			}
 			if(hitsomething){
-				thingstoremove.push(this);
+				player.exhauststoremove.push(this);
 			}
 		}
         context.fillStyle = this.color;
@@ -589,8 +591,8 @@ class Asteroid extends PhyThing{
 					//deathscreen();
                     player.health -= (Math.abs(player.xSpeed - this.xSpeed)) * 80;
                     player.health -= (Math.abs(player.ySpeed - this.ySpeed)) * 80;
-                    player.xSpeed += this.xSpeed / 2;
-                    player.ySpeed += this.ySpeed / 2;
+                    player.xSpeed += (this.xSpeed - player.xSpeed) / 2;
+                    player.ySpeed += (this.ySpeed - player.ySpeed) / 2;
                     thingstoremove.push(this);
 				}
 			}
@@ -678,6 +680,10 @@ class Coin extends PhyThing{
 			}
 			if(hitPlayer){
 				points += 1000 * (player.pointmulti / 100);
+                player.health += 20;
+                if(player.health > 1000){
+                    player.health = 1000;
+                }
 				thingstoremove.push(this);
 			}
 		}
