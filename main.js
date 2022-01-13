@@ -54,6 +54,7 @@ var timer = 0;
 
 var playerColor = "red";
 var uiColor = "green";
+var uiColor2 = "orange";
 
 var BHexists = false;
 
@@ -716,7 +717,9 @@ class HomeManager extends Thing{
                 context.fillText("Inverted", 150 * widthfactor, 50 * widthfactor);
             }
             context.fillText("n to change mode", 50 * widthfactor, 90 * widthfactor);
-            context.fillText("(t for tips)", 50 * widthfactor, 200 * widthfactor);
+            context.fillStyle = uiColor2;
+            context.fillText("First time? Press t for rules and tips!", 50 * widthfactor, 200 * widthfactor);
+            context.fillStyle = uiColor;
 			if(keypressed(84)){
 				this.screen = "tips";
 			}
@@ -732,11 +735,17 @@ class HomeManager extends Thing{
 				this.screen = "home";
 			}
             context.font = (32 * widthfactor).toString()+"px Courier New";
-            context.fillText("Tip: if the screen seems to small or big to you, use the built in zoom in your browser", 50 * widthfactor, 50 * widthfactor);
-            context.fillText("ctrl + or ctrl -", 50 * widthfactor, 90 * widthfactor);
+            //context.fillText("Tip: if the screen seems to small or big to you, use the built in zoom in your browser", 50 * widthfactor, 50 * widthfactor);
+            //context.fillText("ctrl + or ctrl -", 50 * widthfactor, 90 * widthfactor);
+            context.fillText("Tip: You can use WASD or the arrow keys to move the player around in-game", 50 * widthfactor, 50 * widthfactor);
+            context.fillText("Tip: Those grey squares are asteroids! Don't get hit, or it'll hurt!", 50 * widthfactor, 90 * widthfactor);
 			context.fillText("Tip: Press TAB to open the shop, where you can spend your points", 50 * widthfactor, 130 * widthfactor);
-			context.fillText("Tip: Coins are yellow squares, slightly smaller than asteroids. They give you points!", 50 * widthfactor, 170 * widthfactor);
-			context.fillText("Tip: Your points are transferred into Red Coins when you die, which you can spend on cosmetics.", 50 * widthfactor, 210 * widthfactor);
+            context.fillText("Tip: The bar at the top of the screen is your health - you lose a bit when you get hit!", 50 * widthfactor, 170 * widthfactor);
+            context.fillText("Tip: Your exhaust can push asteroids a bit, if you can hit them!", 50 * widthfactor, 210 * widthfactor);
+            context.fillText("Tip: Black holes are invisible! They won't kill you themselves, but their gravity is deadly", 50 * widthfactor, 250 * widthfactor);
+			context.fillText("Tip: Coins are yellow squares, slightly smaller than asteroids. They give you points and health!", 50 * widthfactor, 290 * widthfactor);
+			context.fillText("Tip: Your points are transferred into Red Coins when you die, which you can spend on cosmetics.", 50 * widthfactor, 330 * widthfactor);
+            context.fillText("Press TAB on the home screen to access the Red Coin Shop!", 50 * widthfactor, 370 * widthfactor);
         }
 		else if(this.screen == "shop"){
 			if(this.colorChangeButton == null){
