@@ -56,6 +56,8 @@ var playerColor = "red";
 var uiColor = "green";
 var uiColor2 = "orange";
 
+var UIAsteroidSummon = false;
+
 var BHexists = false;
 
 var playing = false;
@@ -85,6 +87,7 @@ var player;
 //Game UI vars
 var gameoverscreen;
 var shop;
+var homeScreen;
 
 //Event listeners
 document.addEventListener('keydown', function(event) {
@@ -145,6 +148,10 @@ function loop(){
     context.clearRect(0, 0, canvas.width, canvas.height);
     /*context.fillStyle = "black";
     context.fillRect(0, 0, canvas.width, canvas.height)*/
+    for(i=0;i<things.length;i++){
+        var currentThing = things[i];
+        currentThing.Update();
+    }
     if(playing){
 		if(!paused){
 			time++;
@@ -162,9 +169,9 @@ function loop(){
     if(doreset){
         homereset();
     }
-    for(i=0;i<things.length;i++){
-        var currentThing = things[i];
-        currentThing.Update();
+    if(UIAsteroidSummon){
+        summonUIAsteroid();
+        UIAsteroidSummon = false;
     }
 	if(player != null){
 		player.Update();
@@ -174,6 +181,9 @@ function loop(){
 	}
     if(gameoverscreen != null){
         gameoverscreen.Update();
+    }
+    if(homeScreen != null){
+        homeScreen.Update();
     }
     for(i=0;i<thingstoremove.length;i++){
 		//console.log(thingstoremove[i]);
@@ -317,6 +327,43 @@ function summonAsteroid(){
     thingstoadd.push(toAdd);
 }
 
+function summonUIAsteroid(){
+    var side = Math.floor(Math.random() * 4) + 1;
+    
+    var setxs;
+    var setys;
+    
+    var setx;
+    var sety;
+    if(side == 1){
+        setx = -30; //keep at asteroid size
+        sety = Math.random() * canvas.height;
+        setxs = Math.random() * 3 + 2;
+        setys = Math.random() * 2 - 1;
+    }
+    if(side == 2){
+        setx = Math.random() * canvas.width;
+        sety = -30;
+        setxs = Math.random() * 2 - 1;
+        setys = Math.random() * 3 + 2;
+    }
+    if(side == 3){
+        setx = canvas.width;
+        sety = Math.random() * canvas.height;
+        setxs = Math.random() * -3 - 2;
+        setys = Math.random() * 2 - 1;
+    }
+    if(side == 4){
+        setx = Math.random() * canvas.width;
+        sety = canvas.height;
+        setxs = Math.random() * 2 - 1;
+        setys = Math.random() * -3 - 2;
+    }
+
+    toAdd = new UIAsteroid(setx, sety, setxs, setys);
+    thingstoadd.push(toAdd);
+}
+
 function deathscreen(){
     paused = true;
     dead = true;
@@ -329,6 +376,7 @@ function reset(){
     dead = false;
     paused = false;
     player = new Player(canvas.width / 2, canvas.height / 2);
+    homeScreen = null;
     things = [];
     timer = 0;
 	time = 0;
@@ -348,7 +396,10 @@ function homereset(){
     doreset = false;
 	coins += Math.floor(points / 100);
 	points = 0;
-    things.push(new HomeManager());
+    homeScreen = new HomeManager();
+    for(var i=0;i<13;i++){
+        summonUIAsteroid();
+    }
 }
 
 //Base classes
@@ -888,4 +939,36 @@ class Button extends Thing{
 			context.fillRect(this.xpos, this.ypos, this.width * widthfactor, this.height * widthfactor); //Note: Use width factor as button is used in UIs
 		}
 	}
+}
+
+class UIAsteroid extends PhyThing{
+    constructor(setx, sety, sethor, setver){
+        super(setx, sety, 30, 30);
+        this.xSpeed = sethor;
+        this.ySpeed = setver;
+        this.color = "grey";
+    }
+    Update(){
+        var despawn = false;
+        if(this.xSpeed > 0 && this.xpos > canvas.width){
+            despawn = true;
+        }
+        else if(this.xSpeed < 0 && this.xpos + this.width < 0){
+            despawn = true;
+        }
+        if(this.ySpeed > 0 && this.ypos > canvas.height){
+            despawn = true;
+        }
+        else if(this.ySpeed < 0 && this.ypos + this.height < 0){
+            despawn = true;
+        }
+        if(despawn){
+            thingstoremove.push(this);
+            UIAsteroidSummon = true;
+        }
+        this.xpos += this.xSpeed / regspeed;
+        this.ypos += this.ySpeed / regspeed;
+        context.fillStyle = this.color;
+        context.fillRect(this.xpos, this.ypos, this.width, this.height);
+    }
 }
