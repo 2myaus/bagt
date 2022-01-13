@@ -78,8 +78,6 @@ var downKeyDown = false;
 var leftKeyDown = false;
 var rightKeyDown = false;
 
-var lastTime;
-
 //Game instance vars
 var player;
 
@@ -117,10 +115,6 @@ document.addEventListener('mouseup', function(event){
 requestAnimationFrame(loop);
 
 function loop(){
-	if(numframes % 10 == 0 && lastTime != null){
-		regspeed = (1000 / 60) / (performance.now() - lastTime);
-	}
-	lastTime = performance.now();
 	widthfactor = canvas.width / virtwidth;
 	upKeyDown = false;
 	downKeyDown = false;
@@ -162,7 +156,7 @@ function loop(){
         context.fillStyle = "white";
         context.font = (48 * widthfactor).toString()+"px Courier New";
         context.fillText(Math.floor(points).toString(), 50 * widthfactor, 50 * widthfactor);
-        //context.fillText(Math.floor(time / (60 * regspeed)).toString(), canvas.width - (50 + 32 * (Math.floor(time / 60).toString()).length) * widthfactor, 50 * widthfactor);
+        context.fillText(Math.floor(time / (60 * regspeed)).toString(), canvas.width - (50 + 32 * (Math.floor(time / 60).toString()).length) * widthfactor, 50 * widthfactor);
     }
     if(doreset){
         homereset();
@@ -450,7 +444,7 @@ class Player extends PhyThing{
 			}
 			this.xSpeed += xdelta * this.power / regspeed;
 			this.ySpeed += ydelta * this.power / regspeed;
-			if(Math.random() < 1 / regspeed){
+			if(numframes % regspeed == 0){
 				if(xdelta > 0){
 					if(ydelta > 0){
 						this.exhausts.push(new Exhaust(this.xpos + this.width/2, this.ypos + this.height / 2, -0.707, -0.707, this.xSpeed, this.ySpeed, this.exhaustweight));
