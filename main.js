@@ -39,6 +39,9 @@ var bhchance = 0.1;
 var bhstrength = 0.02;
 var seekstrength = 0.2;
 
+var ygrav = 0;
+var xgrav = 0;
+
 var shieldcooldown = 20;
 var lastShield = -shieldcooldown * 60 * regspeed;
     
@@ -392,6 +395,7 @@ function reset(){
     summontime = 50;
     points = 0;
 	shop = new ShopManager();
+	lastShield = -shieldcooldown * 60 * regspeed;
 }
     
 function homereset(){
@@ -505,6 +509,8 @@ class Player extends PhyThing{
 			}
 			this.xSpeed += xdelta * this.power / regspeed;
 			this.ySpeed += ydelta * this.power / regspeed;
+            this.xSpeed += xgrav;
+            this.ySpeed += ygrav;
 			if(numframes % regspeed == 0){
 				if(xdelta > 0){
 					if(ydelta > 0){
@@ -590,6 +596,8 @@ class Exhaust extends PhyThing{
 			else if(this.ySpeed < 0 && this.ypos + this.height < 0){
 				player.exhauststoremove.push(this);
 			}
+            this.xSpeed += xgrav;
+            this.ySpeed += ygrav;
 			this.xpos += this.xSpeed / regspeed;
 			this.ypos += this.ySpeed / regspeed;
 			var hitsomething = false;
@@ -637,6 +645,8 @@ class Asteroid extends PhyThing{
 			else if(this.ySpeed < 0 && this.ypos + this.height < 0){
 				thingstoremove.push(this);
 			}
+            this.xSpeed += xgrav;
+            this.ySpeed += ygrav;
 			this.xpos += this.xSpeed / regspeed;
 			this.ypos += this.ySpeed / regspeed;
 			var hitPlayer = false;
@@ -692,6 +702,8 @@ class HeatSeeker extends PhyThing{
             xdif = xdif / mag;
             ydif = ydif / mag;
 
+            this.xSpeed += xgrav;
+            this.ySpeed += ygrav;
             this.xSpeed += xdif * seekstrength;
             this.ySpeed += ydif * seekstrength;
 
@@ -747,6 +759,8 @@ class BlackHole extends PhyThing{
 				thingstoremove.push(this);
                 BHexists = false;
 			}
+            this.xSpeed += xgrav;
+            this.ySpeed += ygrav;
 			this.xpos += this.xSpeed / regspeed;
 			this.ypos += this.ySpeed / regspeed;
 			this.centerx = this.xpos + this.width / 2;
@@ -791,6 +805,8 @@ class Coin extends PhyThing{
 			else if(this.ySpeed < 0 && this.ypos + this.height < 0){
 				thingstoremove.push(this);
 			}
+            this.xSpeed += xgrav;
+            this.ySpeed += ygrav;
 			this.xpos += this.xSpeed / regspeed;
 			this.ypos += this.ySpeed / regspeed;
 			var hitPlayer = false;
