@@ -34,8 +34,13 @@ var minSummonTime = 12;
 
 var summonTimeMulti = 200;
 var coinchance = 0.1;
+var seekerchance = 0.1;
 var bhchance = 0.1;
 var bhstrength = 0.02;
+var seekstrength = 0.2;
+
+var shieldcooldown = 20;
+var lastShield = -shieldcooldown * 60 * regspeed;
     
 var summontime = 50;
 
@@ -265,8 +270,12 @@ function summonAsteroid(){
             setxs = Math.random() * 2 - 1;
             setys = Math.random() * -3 - 2;
         }
-
-        toAdd = new Asteroid(setx, sety, setxs, setys);
+        if(Math.random() < seekerchance && time > 9000 * regspeed){
+            toAdd = new HeatSeeker(setx, sety, setxs, setys);
+        }
+        else{
+            toAdd = new Asteroid(setx, sety, setxs, setys);
+        }
     }
     else if(BHexists || Math.random() > bhchance || time < 6000 * regspeed){
         if(side == 1){
@@ -586,7 +595,7 @@ class Exhaust extends PhyThing{
 			var hitsomething = false;
 			for(var i=0; i<things.length;i++){
 				var currentThing = things[i];
-				if(currentThing instanceof Asteroid){
+				if(currentThing instanceof Asteroid || currentThing instanceof HeatSeeker){
 					var hitAsteroid = false;
 					if(this.xpos < currentThing.xpos + currentThing.width && this.ypos < currentThing.ypos + currentThing.height && currentThing.xpos < this.xpos + this.width && currentThing.ypos < this.ypos + this.height){
 						hitAsteroid = true;
@@ -654,6 +663,64 @@ class Asteroid extends PhyThing{
     }
 }
 
+class HeatSeeker extends PhyThing{
+    constructor(setx, sety, sethor, setver){
+        super(setx, sety, 30, 30);
+        this.xSpeed = sethor;
+        this.ySpeed = setver;
+        this.color = "orange";
+    }
+    Update(){
+		if(!paused){
+			if(this.xSpeed > 0 && this.xpos > canvas.width){
+				thingstoremove.push(this);
+			}
+			else if(this.xSpeed < 0 && this.xpos + this.width < 0){
+				thingstoremove.push(this);
+			}
+			if(this.ySpeed > 0 && this.ypos > canvas.height){
+				thingstoremove.push(this);
+			}
+			else if(this.ySpeed < 0 && this.ypos + this.height < 0){
+				thingstoremove.push(this);
+			}
+            var xdif = player.xpos - this.xpos;
+            var ydif = player.ypos - this.ypos;
+
+            var mag = Math.sqrt(Math.pow(xdif, 2) + Math.pow(ydif, 2));
+
+            xdif = xdif / mag;
+            ydif = ydif / mag;
+
+            this.xSpeed += xdif * seekstrength;
+            this.ySpeed += ydif * seekstrength;
+
+			this.xpos += this.xSpeed / regspeed;
+			this.ypos += this.ySpeed / regspeed;
+			var hitPlayer = false;
+			if(this.xpos < player.xpos + player.width && this.ypos < player.ypos + player.height && player.xpos < this.xpos + this.width && player.ypos < this.ypos + this.height){
+				hitPlayer = true;
+			}
+			if(hitPlayer){
+				if(player.shielded){
+					player.shielded = false;
+					thingstoremove.push(this);
+				}
+				else{
+					//deathscreen();
+                    player.health -= (Math.abs(player.xSpeed - this.xSpeed)) * 80;
+                    player.health -= (Math.abs(player.ySpeed - this.ySpeed)) * 80;
+                    player.xSpeed += (this.xSpeed - player.xSpeed) / 2;
+                    player.ySpeed += (this.ySpeed - player.ySpeed) / 2;
+                    thingstoremove.push(this);
+				}
+			}
+		}
+        context.fillStyle = this.color;
+        context.fillRect(this.xpos, this.ypos, this.width, this.height);
+    }
+}
+
 class BlackHole extends PhyThing{
     constructor(setx, sety, sethor, setver){
         super(setx, sety, 60, 60);
@@ -691,7 +758,7 @@ class BlackHole extends PhyThing{
 		}
     }
 	Accelthing(myThing){
-		if(myThing instanceof Asteroid || myThing instanceof Coin || myThing instanceof Player || myThing instanceof Exhaust){
+		if(myThing instanceof Asteroid || myThing instanceof Coin || myThing instanceof Player || myThing instanceof Exhaust || myThing instanceof HeatSeeker){
 			var currentcenterx = myThing.xpos + myThing.width / 2;
 			var currentcentery = myThing.ypos + myThing.height / 2;
 			var xdist = this.centerx - currentcenterx;
@@ -797,6 +864,7 @@ class HomeManager extends Thing{
 			context.fillText("Tip: Coins are yellow squares, slightly smaller than asteroids. They give you points and health!", 50 * widthfactor, 290 * widthfactor);
 			context.fillText("Tip: Your points are transferred into Red Coins when you die, which you can spend on cosmetics.", 50 * widthfactor, 330 * widthfactor);
             context.fillText("Press TAB on the home screen to access the Red Coin Shop!", 50 * widthfactor, 370 * widthfactor);
+		context.fillText("Tip: Orange squares are seekers - they're like asteroids, but they follow you and are deadlier!", 50 * widthfactor, 410 * widthfactor);
         }
 		else if(this.screen == "shop"){
 			if(this.colorChangeButton == null){
@@ -875,17 +943,18 @@ class ShopManager extends Thing{
 			
 			context.fillText("Thrust Power Multiplier: "+Math.floor(player.power * 100).toString()+"%", 200 * widthfactor, 600 * widthfactor);
 			context.fillText("(Cost: 5000)", 200 * widthfactor, 648 * widthfactor);
-            
-            context.fillText("Single-use shield: "+ (player.shielded ? "On" : "Off"), 200 * widthfactor, 800 * widthfactor);
+            		var cooldownLeft = lastShield + shieldcooldown * 60 * regspeed - time;
+			if(cooldownLeft <= 0){cooldownLeft = 0;}
+            context.fillText("Single-use shield: "+ (player.shielded ? "On" : "Off") + " (Cooldown: " + Math.ceil(cooldownLeft / (60 * regspeed)).toString() + ")", 200 * widthfactor, 800 * widthfactor);
 			context.fillText("(Cost: 20000)", 200 * widthfactor, 848 * widthfactor);
 			
 			
-			if(this.exhaustUpgradeButton.clicked && points >= 10000){
+			if(this.exhaustUpgradeButton.clicked && points >= 10000 && player.exhaustweight < 0.3){
 				player.exhaustweight += 0.002;
 				points -= 10000;
 			}
 			
-			if(this.pointUpgradeButton.clicked && points >= 10000){
+			if(this.pointUpgradeButton.clicked && points >= 10000 && player.pointmulti < 2000){
 				player.pointmulti += 20;
 				points -= 10000;
 			}
@@ -895,9 +964,10 @@ class ShopManager extends Thing{
 				points -= 5000;
 			}
             
-            if(!player.shielded && this.shieldUpgradeButton.clicked && points >= 20000){
+            if(!player.shielded && this.shieldUpgradeButton.clicked && points >= 20000 && cooldownLeft == 0){
                 player.shielded = true;
                 points -= 20000;
+		lastShield = time;
             }
 		}
 	}
