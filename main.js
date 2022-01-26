@@ -32,7 +32,6 @@ var MBsDown = [false, false, false];
 var regspeed = 1; //Basically how much faster the current updates per second are than 60, so 120 would be regspeed of 2, 180 3, etc.
 
 var virtwidth = 1920;
-var widthfactor = 1;
 
 //Game vars
 var minSummonTime = 12;
@@ -136,7 +135,6 @@ document.addEventListener('mouseup', function(event){
 requestAnimationFrame(loop);
 
 function loop(){
-	widthfactor = canvas.width / virtwidth;
 	upKeyDown = false;
 	downKeyDown = false;
 	leftKeyDown = false;
@@ -170,7 +168,7 @@ function loop(){
 		if(!paused){
 			time++;
 			timer++;
-			if((timer * widthfactor) / regspeed >= summontime){
+			if((timer) / regspeed >= summontime){
 				summonAsteroid();
 				timer = 0;
 			}
@@ -197,9 +195,9 @@ function loop(){
     }
     if(playing){
         context.fillStyle = "white";
-        context.font = (48 * widthfactor).toString()+"px Courier New";
-        context.fillText(Math.floor(points).toString(), 50 * widthfactor, 50 * widthfactor);
-        context.fillText(Math.floor(time / (60 * regspeed)).toString(), canvas.width - (50 + 32 * (Math.floor(time / 60).toString()).length) * widthfactor, 50 * widthfactor);
+        context.font = ("48px Courier New");
+        context.fillText(Math.floor(points).toString(), 50, 50);
+        context.fillText(Math.floor(time / (60 * regspeed)).toString(), canvas.width - (50 + 32 * (Math.floor(time / 60).toString()).length), 50);
     }
     for(i=0;i<thingstoremove.length;i++){
 		//console.log(thingstoremove[i]);
@@ -239,11 +237,11 @@ function MBdownInRange(MB, xi, yi, xf, yf){
 
 //Misc game functions
 function summonAsteroid(){
-    points += (1/widthfactor) * player.pointmulti;
+    points += (1) * player.pointmulti;
     
     //if(points > hiscore){hiscore = points;}
     if(summontime > minSummonTime){
-        summontime = summontime * (1 - (1 / widthfactor) / summonTimeMulti);
+        summontime = summontime * (1 - (1) / summonTimeMulti);
     }
     else{
         summontime = minSummonTime;
@@ -585,9 +583,9 @@ class Player extends PhyThing{
 		context.fillStyle = this.color;
         context.fillRect(this.xpos, this.ypos, this.width, this.height);
         context.fillStyle = "rgba(255,0,0,0.5)";
-        context.fillRect(canvas.width / 2 - 500 * widthfactor, 20 * widthfactor, 1000 * widthfactor, 20 * widthfactor);
+        context.fillRect(canvas.width / 2 - 500, 20, 1000, 20);
         context.fillStyle = "rgba(0,255,0,0.5)";
-        context.fillRect(canvas.width / 2 - (this.health * widthfactor) / 2, 20 * widthfactor, this.health * widthfactor, 20 * widthfactor);
+        context.fillRect(canvas.width / 2 - (this.health) / 2, 20, this.health, 20);
     }
 }
 
@@ -852,24 +850,24 @@ class HomeManager extends Thing{
     }
     Update(){
         context.fillStyle = uiColor;
-        context.font = (96 * widthfactor).toString()+"px Courier New";
+        context.font = "96px Courier New";
         if(this.screen == "home"){
-            context.fillText("bad", canvas.width / 2, 100 * widthfactor);
-            context.fillText("asteroid", canvas.width / 2, 200 * widthfactor);
-            context.fillText("game", canvas.width / 2, 300 * widthfactor);
-            context.fillText("thing", canvas.width / 2, 400 * widthfactor);
-            context.fillText("(press space)", canvas.width / 2 - 200 * widthfactor, 500 * widthfactor);
-            context.font = (32 * widthfactor).toString()+"px Courier New";
-            context.fillText("Mode: ", 50 * widthfactor, 50 * widthfactor);
+            context.fillText("bad", canvas.width / 2, 100);
+            context.fillText("asteroid", canvas.width / 2, 200);
+            context.fillText("game", canvas.width / 2, 300);
+            context.fillText("thing", canvas.width / 2, 400);
+            context.fillText("(press space)", canvas.width / 2 - 200, 500);
+            context.font = "32px Courier New";
+            context.fillText("Mode: ", 50, 50);
             if(mode == 1){
-                context.fillText("Normal", 150 * widthfactor, 50 * widthfactor);
+                context.fillText("Normal", 150, 50);
             }
             else if(mode == 2){
-                context.fillText("Inverted", 150 * widthfactor, 50 * widthfactor);
+                context.fillText("Inverted", 150, 50);
             }
-            context.fillText("n to change mode", 50 * widthfactor, 90 * widthfactor);
+            context.fillText("n to change mode", 50, 90);
             context.fillStyle = uiColor2;
-            context.fillText("First time? Press t for rules and tips!", 50 * widthfactor, 200 * widthfactor);
+            context.fillText("First time? Press t for rules and tips!", 50, 200);
             context.fillStyle = uiColor;
 			if(keypressed(84)){
 				this.screen = "tips";
@@ -885,38 +883,38 @@ class HomeManager extends Thing{
 			if(keypressed(84)){
 				this.screen = "home";
 			}
-            context.font = (32 * widthfactor).toString()+"px Courier New";
-            //context.fillText("Tip: if the screen seems to small or big to you, use the built in zoom in your browser", 50 * widthfactor, 50 * widthfactor);
-            //context.fillText("ctrl + or ctrl -", 50 * widthfactor, 90 * widthfactor);
-            context.fillText("Tip: You can use WASD or the arrow keys to move the player around in-game", 50 * widthfactor, 50 * widthfactor);
-            context.fillText("Tip: Those grey squares are asteroids! Don't get hit, or it'll hurt!", 50 * widthfactor, 90 * widthfactor);
-			context.fillText("Tip: Press TAB to open the shop, where you can spend your points", 50 * widthfactor, 130 * widthfactor);
-            context.fillText("Tip: The bar at the top of the screen is your health - you lose a bit when you get hit!", 50 * widthfactor, 170 * widthfactor);
-            context.fillText("Tip: Your exhaust can push asteroids a bit, if you can hit them!", 50 * widthfactor, 210 * widthfactor);
-            context.fillText("Tip: Black holes are invisible! They won't kill you themselves, but their gravity is deadly", 50 * widthfactor, 250 * widthfactor);
-			context.fillText("Tip: Coins are yellow squares, slightly smaller than asteroids. They give you points and health!", 50 * widthfactor, 290 * widthfactor);
-			context.fillText("Tip: Your points are transferred into Red Coins when you die, which you can spend on cosmetics.", 50 * widthfactor, 330 * widthfactor);
-            context.fillText("Press TAB on the home screen to access the Red Coin Shop!", 50 * widthfactor, 370 * widthfactor);
-		context.fillText("Tip: Orange squares are seekers - they're like asteroids, but they follow you and are deadlier!", 50 * widthfactor, 410 * widthfactor);
+            context.font = "32px Courier New";
+            //context.fillText("Tip: if the screen seems to small or big to you, use the built in zoom in your browser", 50, 50);
+            //context.fillText("ctrl + or ctrl -", 50, 90);
+            context.fillText("Tip: You can use WASD or the arrow keys to move the player around in-game", 50, 50);
+            context.fillText("Tip: Those grey squares are asteroids! Don't get hit, or it'll hurt!", 50, 90);
+			context.fillText("Tip: Press TAB to open the shop, where you can spend your points", 50, 130);
+            context.fillText("Tip: The bar at the top of the screen is your health - you lose a bit when you get hit!", 50, 170);
+            context.fillText("Tip: Your exhaust can push asteroids a bit, if you can hit them!", 50, 210);
+            context.fillText("Tip: Black holes are invisible! They won't kill you themselves, but their gravity is deadly", 50, 250);
+			context.fillText("Tip: Coins are yellow squares, slightly smaller than asteroids. They give you points and health!", 50, 290);
+			context.fillText("Tip: Your points are transferred into Red Coins when you die, which you can spend on cosmetics.", 50, 330);
+            context.fillText("Press TAB on the home screen to access the Red Coin Shop!", 50, 370);
+		context.fillText("Tip: Orange squares are seekers - they're like asteroids, but they follow you and are deadlier!", 50, 410);
         }
 		else if(this.screen == "shop"){
 			if(this.colorChangeButton == null){
 				this.colorChangeButton = new Button(0,0,100,60,uiColor);
 			}
-			this.colorChangeButton.xpos = 50 * widthfactor;
-			this.colorChangeButton.ypos = 170 * widthfactor;
+			this.colorChangeButton.xpos = 50;
+			this.colorChangeButton.ypos = 170;
 			this.colorChangeButton.color = playerColor;
 			this.colorChangeButton.Update();
 			context.fillStyle = uiColor;
-			context.font = (48 * widthfactor).toString()+"px Courier New";
-			context.fillText("shop", canvas.width / 2, 100 * widthfactor);
-			context.fillText("Change player color to random", 200 * widthfactor, 200 * widthfactor);
-			context.fillText("(Cost: 200 RC)", 200 * widthfactor, 248 * widthfactor);
+			context.font = "48px Courier New";
+			context.fillText("shop", canvas.width / 2, 100);
+			context.fillText("Change player color to random", 200, 200);
+			context.fillText("(Cost: 200 RC)", 200, 248);
 			
 			context.fillStyle = "red";
-			context.fillRect(1750 * widthfactor, 100 * widthfactor, 20 * widthfactor, 20 * widthfactor);
-			context.font = (32 * widthfactor).toString()+"px Courier New";
-			context.fillText(coins.toString(), 1790 * widthfactor, 120 * widthfactor);
+			context.fillRect(1750, 100, 20, 20);
+			context.font = "32px Courier New";
+			context.fillText(coins.toString(), 1790, 120);
 			if(this.colorChangeButton.clicked){
 				if(coins >= 200){
 					var randcolor = Math.random() * 10000;
@@ -950,36 +948,36 @@ class ShopManager extends Thing{
             paused = this.visible;
 		}
 		if(this.visible){
-			this.exhaustUpgradeButton.xpos = 50 * widthfactor;
-			this.pointUpgradeButton.xpos = 50 * widthfactor;
-			this.thrustUpgradeButton.xpos = 50 * widthfactor;
-            this.shieldUpgradeButton.xpos = 50 * widthfactor;
-			this.exhaustUpgradeButton.ypos = 170 * widthfactor;
-			this.pointUpgradeButton.ypos = 370 * widthfactor;
-			this.thrustUpgradeButton.ypos = 570 * widthfactor;
-            this.shieldUpgradeButton.ypos = 770 * widthfactor;
+			this.exhaustUpgradeButton.xpos = 50;
+			this.pointUpgradeButton.xpos = 50;
+			this.thrustUpgradeButton.xpos = 50;
+            this.shieldUpgradeButton.xpos = 50;
+			this.exhaustUpgradeButton.ypos = 170;
+			this.pointUpgradeButton.ypos = 370;
+			this.thrustUpgradeButton.ypos = 570;
+            this.shieldUpgradeButton.ypos = 770;
 			
 			this.exhaustUpgradeButton.Update();
 			this.pointUpgradeButton.Update();
 			this.thrustUpgradeButton.Update();
             this.shieldUpgradeButton.Update();
 			context.fillStyle = uiColor;
-			context.font = (96 * widthfactor).toString()+"px Courier New";
-			context.fillText("shop", canvas.width / 2, 200 * widthfactor);
+			context.font = "96px Courier New";
+			context.fillText("shop", canvas.width / 2, 200);
 			
-			context.font = (48 * widthfactor).toString()+"px Courier New";
-			context.fillText("Exhaust weight: "+Math.floor(player.exhaustweight * 10000).toString(), 200 * widthfactor, 200 * widthfactor);
-			context.fillText("(Cost: 10000)", 200 * widthfactor, 248 * widthfactor);
+			context.font = "48px Courier New";
+			context.fillText("Exhaust weight: "+Math.floor(player.exhaustweight * 10000).toString(), 200, 200);
+			context.fillText("(Cost: 10000)", 200, 248);
 			
-			context.fillText("Point Multiplier: "+Math.floor(player.pointmulti).toString()+"%", 200 * widthfactor, 400 * widthfactor);
-			context.fillText("(Cost: 10000)", 200 * widthfactor, 448 * widthfactor);
+			context.fillText("Point Multiplier: "+Math.floor(player.pointmulti).toString()+"%", 200, 400);
+			context.fillText("(Cost: 10000)", 200, 448);
 			
-			context.fillText("Thrust Power Multiplier: "+Math.floor(player.power * 100).toString()+"%", 200 * widthfactor, 600 * widthfactor);
-			context.fillText("(Cost: 5000)", 200 * widthfactor, 648 * widthfactor);
+			context.fillText("Thrust Power Multiplier: "+Math.floor(player.power * 100).toString()+"%", 200, 600);
+			context.fillText("(Cost: 5000)", 200, 648);
             		var cooldownLeft = lastShield + shieldcooldown * 60 * regspeed - time;
 			if(cooldownLeft <= 0){cooldownLeft = 0;}
-            context.fillText("Single-use shield: "+ (player.shielded ? "On" : "Off") + " (Cooldown: " + Math.ceil(cooldownLeft / (60 * regspeed)).toString() + ")", 200 * widthfactor, 800 * widthfactor);
-			context.fillText("(Cost: 20000)", 200 * widthfactor, 848 * widthfactor);
+            context.fillText("Single-use shield: "+ (player.shielded ? "On" : "Off") + " (Cooldown: " + Math.ceil(cooldownLeft / (60 * regspeed)).toString() + ")", 200, 800);
+			context.fillText("(Cost: 20000)", 200, 848);
 			
 			
 			if(this.exhaustUpgradeButton.clicked && points >= 10000 && player.exhaustweight < 0.3){
@@ -1013,11 +1011,11 @@ class GameOverManager extends Thing{
     }
     Update(){
         context.fillStyle = uiColor;
-        context.font = (96 * widthfactor).toString()+"px Courier New";
-        context.fillText("u died xd", canvas.width / 2, 100 * widthfactor);
+        context.font = "96px Courier New";
+        context.fillText("u died xd", canvas.width / 2, 100);
 
-        context.font = (48 * widthfactor).toString()+"px Courier New";
-        context.fillText("Space to continue ", 100 * widthfactor, 200 * widthfactor);
+        context.font = "48px Courier New";
+        context.fillText("Space to continue ", 100, 200);
         if(keys.includes(startKey)){
             doreset = true;
         }
@@ -1035,20 +1033,20 @@ class Button extends Thing{
 	}
 	Update(){
 		this.clicked = false;
-		if(MBpressedInRange(0, this.xpos, this.ypos, this.xpos + this.width * widthfactor, this.ypos + this.height * widthfactor)){
+		if(MBpressedInRange(0, this.xpos, this.ypos, this.xpos + this.width, this.ypos + this.height)){
 			this.clicked = true;
 		}
 		context.fillStyle = this.color;
-        context.fillRect(this.xpos, this.ypos, this.width * widthfactor, this.height * widthfactor);
-		if(MBdownInRange(0, this.xpos, this.ypos, this.xpos + this.width * widthfactor, this.ypos + this.height * widthfactor)){
+        context.fillRect(this.xpos, this.ypos, this.width, this.height);
+		if(MBdownInRange(0, this.xpos, this.ypos, this.xpos + this.width, this.ypos + this.height)){
 			context.fillStyle = "rgba(0,0,0,0.4)";
-			context.fillRect(this.xpos, this.ypos, this.width * widthfactor, this.height * widthfactor); //Note: Use width factor as button is used in UIs
+			context.fillRect(this.xpos, this.ypos, this.width, this.height);
 		}
         if(this.text != null && this.textcolor != null && this.textsize != null){
-            context.font = (this.textsize * widthfactor).toString()+"px Courier New";
+            context.font = (this.textsize).toString()+"px Courier New";
             context.fillStyle = this.textcolor;
             context.textAlign = "center";
-            context.fillText(this.text, this.xpos + (this.width * widthfactor) / 2, this.ypos + (this.height * widthfactor) / 2 + (this.textsize * widthfactor) / 2);
+            context.fillText(this.text, this.xpos + (this.width) / 2, this.ypos + (this.height) / 2 + (this.textsize) / 2);
             context.textAlign = "start";
         }
 	}
