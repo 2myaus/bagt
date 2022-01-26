@@ -121,8 +121,8 @@ document.addEventListener('keyup', function(event) {
     }
 });
 document.addEventListener('mousemove', function(event){
-	mouseX = event.clientX;
-	mouseY = event.clientY;
+	mouseX = (event.clientX / window.innerWidth) * canvas.width;
+	mouseY = (event.clientY / window.innerHeight) * canvas.height;
 });
 document.addEventListener('mousedown', function(event){
 	MBsDown[event.button] = true;
