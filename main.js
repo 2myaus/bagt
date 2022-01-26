@@ -10,6 +10,11 @@ const c1 = document.getElementById("gameCanvas");
 var canvas = c1;
 var context = canvas.getContext("2d");
 
+canvas.style.width = "100%";
+canvas.style.height = "100%";
+
+canvas.width = 1920;
+
 var things = [];
 var thingstoadd = [];
 var thingstoremove = [];
@@ -41,6 +46,10 @@ var seekstrength = 0.2;
 
 var ygrav = 0;
 var xgrav = 0;
+
+var flashlightMode = false;
+var innerFlashlightRad = 30;
+var outerFlashlightRad = 200;
 
 var shieldcooldown = 20;
 var lastShield = -shieldcooldown * 60 * regspeed;
@@ -147,11 +156,8 @@ function loop(){
 		}
 	}
     context = canvas.getContext("2d");
-    if(canvas.width != window.innerWidth){
-        canvas.width = window.innerWidth;
-    }
-    if(canvas.height != window.innerHeight){
-        canvas.height = window.innerHeight;
+    if(canvas.height != (1920 / window.innerWidth) * 1080){
+        canvas.height = (1920 / window.innerWidth) * window.innerHeight;
     }
     context.clearRect(0, 0, canvas.width, canvas.height);
     /*context.fillStyle = "black";
@@ -169,10 +175,6 @@ function loop(){
 				timer = 0;
 			}
 		}
-        context.fillStyle = "white";
-        context.font = (48 * widthfactor).toString()+"px Courier New";
-        context.fillText(Math.floor(points).toString(), 50 * widthfactor, 50 * widthfactor);
-        context.fillText(Math.floor(time / (60 * regspeed)).toString(), canvas.width - (50 + 32 * (Math.floor(time / 60).toString()).length) * widthfactor, 50 * widthfactor);
     }
     if(doreset){
         homereset();
@@ -192,6 +194,12 @@ function loop(){
     }
     if(homeScreen != null){
         homeScreen.Update();
+    }
+    if(playing){
+        context.fillStyle = "white";
+        context.font = (48 * widthfactor).toString()+"px Courier New";
+        context.fillText(Math.floor(points).toString(), 50 * widthfactor, 50 * widthfactor);
+        context.fillText(Math.floor(time / (60 * regspeed)).toString(), canvas.width - (50 + 32 * (Math.floor(time / 60).toString()).length) * widthfactor, 50 * widthfactor);
     }
     for(i=0;i<thingstoremove.length;i++){
 		//console.log(thingstoremove[i]);
@@ -561,6 +569,15 @@ class Player extends PhyThing{
 				this.ySpeed = 0;
 			}
 		}
+        if(flashlightMode){
+            var xc = this.xpos + this.width / 2;
+            var yc = this.ypos + this.height / 2;
+            var gradient = context.createRadialGradient(xc, yc, innerFlashlightRad, xc, yc, outerFlashlightRad);
+            gradient.addColorStop(0, "rgba(50,50,50,0.01)");
+            gradient.addColorStop(1, "black");
+            context.fillStyle = gradient;
+            context.fillRect(0, 0, canvas.width, canvas.height);
+        }
 		if(this.shielded){
 			context.fillStyle = "cyan";
 			context.fillRect(this.xpos - 2, this.ypos - 2, this.width + 4, this.height + 4);
@@ -815,7 +832,7 @@ class Coin extends PhyThing{
 			}
 			if(hitPlayer){
 				points += 1000 * (player.pointmulti / 100);
-                player.health += 20;
+                player.health += 50;
                 if(player.health > 1000){
                     player.health = 1000;
                 }
@@ -1008,10 +1025,13 @@ class GameOverManager extends Thing{
 }
 
 class Button extends Thing{
-	constructor(x, y, w, h, color){
+	constructor(x, y, w, h, color, text, textcolor, textsize){
 		super(x, y, w, h);
 		this.color = color;
 		this.clicked = false;
+        this.text = text;
+        this.textcolor = textcolor;
+        this.textsize = textsize;
 	}
 	Update(){
 		this.clicked = false;
@@ -1024,6 +1044,13 @@ class Button extends Thing{
 			context.fillStyle = "rgba(0,0,0,0.4)";
 			context.fillRect(this.xpos, this.ypos, this.width * widthfactor, this.height * widthfactor); //Note: Use width factor as button is used in UIs
 		}
+        if(this.text != null && this.textcolor != null && this.textsize != null){
+            context.font = (this.textsize * widthfactor).toString()+"px Courier New";
+            context.fillStyle = this.textcolor;
+            context.textAlign = "center";
+            context.fillText(this.text, this.xpos + (this.width * widthfactor) / 2, this.ypos + (this.height * widthfactor) / 2 + (this.textsize * widthfactor) / 2);
+            context.textAlign = "start";
+        }
 	}
 }
 
