@@ -10,6 +10,8 @@ const c1 = document.getElementById("gameCanvas");
 var canvas = c1;
 var context = canvas.getContext("2d");
 
+var firstframe = true;
+
 canvas.style.width = "100%";
 canvas.style.height = "100%";
 
@@ -18,6 +20,8 @@ canvas.width = 1920;
 var things = [];
 var thingstoadd = [];
 var thingstoremove = [];
+
+var bgstars = [];
 
 var keys = [];
 var keyslastupdate = [];
@@ -105,6 +109,13 @@ var gameoverscreen;
 var shop;
 var homeScreen;
 
+//Assets
+//Textures
+var testTex = new Image();
+testTex.src = "https://static.wikia.nocookie.net/dbxfanon/images/c/cc/The_Impostor.png/revision/latest?cb=20201223005217";
+context.drawImage(testTex, 0, 0);
+//Sounds
+
 //Event listeners
 document.addEventListener('keydown', function(event) {
 	if(!keys.includes(17)){ //Allow ctrl key
@@ -130,20 +141,44 @@ document.addEventListener('mouseup', function(event){
 	MBsDown[event.button] = false;
 });
 
+window.addEventListener('resize', function(){
+    if(canvas.height != (1920 / window.innerWidth) * 1080){
+        canvas.height = (1920 / window.innerWidth) * window.innerHeight;
+    }
+    bgstars = [];
+    for(var i=0;i<26;i++){
+        summonUIStar();
+    }
+});
+
 //Main loop
-//setInterval(loop, 1000/updatespersecond);
 requestAnimationFrame(loop);
 
 function loop(){
+    if(firstframe){
+        if(canvas.height != (1920 / window.innerWidth) * 1080){
+            canvas.height = (1920 / window.innerWidth) * window.innerHeight;
+        }
+        for(var i=0;i<26;i++){
+            summonUIStar();
+        }
+        if(canvas.height != (1920 / window.innerWidth) * 1080){
+            canvas.height = (1920 / window.innerWidth) * window.innerHeight;
+        }
+        firstframe = false;
+    }
 	upKeyDown = false;
 	downKeyDown = false;
 	leftKeyDown = false;
 	rightKeyDown = false;
-	for(i=0;i<keys.length;i++){
+    var i = 0;
+    var len = keys.length;
+	while(i < len){
 		if(upKeys.includes(keys[i])){upKeyDown = true;}
 		if(downKeys.includes(keys[i])){downKeyDown = true;}
 		if(leftKeys.includes(keys[i])){leftKeyDown = true;}
 		if(rightKeys.includes(keys[i])){rightKeyDown = true;}
+        i++;
 	}
 	if(keypressed(modeswapKey)){
 		if(mode == 1){
@@ -153,16 +188,23 @@ function loop(){
 			mode = 1;
 		}
 	}
-    context = canvas.getContext("2d");
-    if(canvas.height != (1920 / window.innerWidth) * 1080){
-        canvas.height = (1920 / window.innerWidth) * window.innerHeight;
-    }
+    //context = canvas.getContext("2d");
     context.clearRect(0, 0, canvas.width, canvas.height);
     /*context.fillStyle = "black";
     context.fillRect(0, 0, canvas.width, canvas.height)*/
-    for(i=0;i<things.length;i++){
+    i = 0;
+    len = bgstars.length;
+    while(i < len){
+        var currentStar = bgstars[i];
+        currentStar.Update();
+        i++;
+    }
+    i = 0;
+    len = things.length;
+    while(i < len){
         var currentThing = things[i];
         currentThing.Update();
+        i++;
     }
     if(playing){
 		if(!paused){
@@ -199,13 +241,18 @@ function loop(){
         context.fillText(Math.floor(points).toString(), 50, 50);
         context.fillText(Math.floor(time / (60 * regspeed)).toString(), canvas.width - (50 + 32 * (Math.floor(time / 60).toString()).length), 50);
     }
-    for(i=0;i<thingstoremove.length;i++){
-		//console.log(thingstoremove[i]);
+    i = 0;
+    len = thingstoremove.length;
+    while(i < len){
         things.splice(things.indexOf(thingstoremove[i]), 1);
+        i++;
     }
     thingstoremove = [];
-    for(i=0;i<thingstoadd.length;i++){
+    i = 0;
+    len = thingstoadd.length;
+    while(i < len){
         things.push(thingstoadd[i]);
+        i++;
     }
     thingstoadd = [];
 	keyslastupdate = keys.slice();
@@ -382,6 +429,11 @@ function summonUIAsteroid(){
     thingstoadd.push(toAdd);
 }
 
+function summonUIStar(){
+    toAdd = new UIStar(Math.random() * canvas.width, Math.random() * canvas.height);
+    bgstars.push(toAdd);
+}
+
 function deathscreen(){
     paused = true;
     dead = true;
@@ -467,12 +519,18 @@ class Player extends PhyThing{
         this.exhauststoremove = [];
     }
     Update(){
-        for(var i=0;i<this.exhauststoremove.length;i++){
+        var i = 0;
+        var len = this.exhauststoremove.length;
+        while(i < len){
             this.exhausts.splice(this.exhausts.indexOf(this.exhauststoremove[i]), 1);
+            i++;
         }
         this.exhauststoremove = [];
-        for(var i=0;i<this.exhausts.length;i++){
+        i = 0;
+        len = this.exhausts.length;
+        while(i < len){
             this.exhausts[i].Update();
+            i++;
         }
 		if(!paused){
 			this.xpos += this.xSpeed / regspeed;
@@ -616,7 +674,9 @@ class Exhaust extends PhyThing{
 			this.xpos += this.xSpeed / regspeed;
 			this.ypos += this.ySpeed / regspeed;
 			var hitsomething = false;
-			for(var i=0; i<things.length;i++){
+            var i = 0;
+            var len = things.length;
+			while(i < len){
 				var currentThing = things[i];
 				if(currentThing instanceof Asteroid || currentThing instanceof HeatSeeker){
 					var hitAsteroid = false;
@@ -629,6 +689,7 @@ class Exhaust extends PhyThing{
 						currentThing.ySpeed += this.ySpeed * this.weight;
 					}
 				}
+                i++;
 			}
 			if(hitsomething){
 				player.exhauststoremove.push(this);
@@ -780,8 +841,11 @@ class BlackHole extends PhyThing{
 			this.ypos += this.ySpeed / regspeed;
 			this.centerx = this.xpos + this.width / 2;
 			this.centery = this.ypos + this.height / 2;
-			for(var iter=0;iter<things.length;iter++){
-				this.Accelthing(things[iter]);
+            var i = 0;
+            var len = things.length;
+			while(i < len){
+				this.Accelthing(things[i]);
+                i++;
 			}
 			this.Accelthing(player);
 		}
@@ -1079,6 +1143,17 @@ class UIAsteroid extends PhyThing{
         }
         this.xpos += this.xSpeed / regspeed;
         this.ypos += this.ySpeed / regspeed;
+        context.fillStyle = this.color;
+        context.fillRect(this.xpos, this.ypos, this.width, this.height);
+    }
+}
+
+class UIStar extends PhyThing{
+    constructor(setx, sety){
+        super(setx, sety, 5, 5);
+        this.color = "white";
+    }
+    Update(){
         context.fillStyle = this.color;
         context.fillRect(this.xpos, this.ypos, this.width, this.height);
     }
