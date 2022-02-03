@@ -41,9 +41,16 @@ var virtwidth = 1920;
 var minSummonTime = 12;
 
 var summonTimeMulti = 200;
+
 var coinchance = 0.1;
+
 var seekerchance = 0.1;
+
 var bhchance = 0.1;
+
+var minbhtime = 150; //Time in seconds
+var minseekertime = 200;
+
 var bhstrength = 0.02;
 var seekstrength = 0.2;
 
@@ -326,14 +333,14 @@ function summonAsteroid(){
             setxs = Math.random() * 2 - 1;
             setys = Math.random() * -3 - 2;
         }
-        if(Math.random() < seekerchance && time > 9000 * regspeed){
+        if(Math.random() < seekerchance && time > minseekertime * 60 * regspeed){
             toAdd = new HeatSeeker(setx, sety, setxs, setys);
         }
         else{
             toAdd = new Asteroid(setx, sety, setxs, setys);
         }
     }
-    else if(BHexists || Math.random() > bhchance || time < 6000 * regspeed){
+    else if(BHexists || Math.random() > bhchance || time < minbhtime * 60 * regspeed){
         if(side == 1){
             setx = -20; //keep at coin size
             sety = Math.random() * canvas.height;
