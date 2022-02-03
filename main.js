@@ -931,10 +931,10 @@ class HomeManager extends Thing{
             }
             context.fillText("n to change mode", 50, 90);
             context.fillStyle = uiColor2;
-            context.fillText("First time? Press t for rules and tips!", 50, 200);
+            context.fillText("First time? Press t for the basics!", 50, 200);
             context.fillStyle = uiColor;
 			if(keypressed(84)){
-				this.screen = "tips";
+				this.screen = "basics";
 			}
 			else if(keypressed(shopKey)){
 				this.screen = "shop";
@@ -959,7 +959,7 @@ class HomeManager extends Thing{
 			context.fillText("Tip: Coins are yellow squares, slightly smaller than asteroids. They give you points and health!", 50, 290);
 			context.fillText("Tip: Your points are transferred into Red Coins when you die, which you can spend on cosmetics.", 50, 330);
             context.fillText("Press TAB on the home screen to access the Red Coin Shop!", 50, 370);
-		context.fillText("Tip: Orange squares are seekers - they're like asteroids, but they follow you and are deadlier!", 50, 410);
+			context.fillText("Tip: Orange squares are seekers - they're like asteroids, but they follow you and are deadlier!", 50, 410);
         }
 		else if(this.screen == "shop"){
 			if(this.colorChangeButton == null){
@@ -993,6 +993,70 @@ class HomeManager extends Thing{
 			if(keypressed(shopKey)){
 				this.screen = "home"
 			}
+		}
+		else if(this.screen == "basics"){
+			if(keypressed(84)){
+				this.screen = "home";
+			}
+			context.textAlign = "center";
+            context.font = "96px Courier New";
+            context.fillText("bagt basics", 960, 100);
+			context.font = "32px Courier New";
+			
+			
+			context.fillStyle = "red";
+			context.fillRect(300, 220, 15, 15);
+			context.fillStyle = uiColor;
+			
+			context.fillText("This red square is your player! You can use WASD or the", 960, 200);
+			context.fillText("arrow keys to move, and you'll take damage if you get hit by", 960, 232);
+			context.fillText("anything", 960, 264);
+			
+			
+			context.fillStyle = "grey";
+			context.fillRect(300, 325, 30, 30);
+			context.fillStyle = uiColor;
+			
+			context.fillText("This grey square is an asteroid! Don't let it hit you, or", 960, 328);
+			context.fillText("it'll hurt a lot!", 960, 360);
+			
+
+			context.fillStyle = "yellow";
+			context.fillRect(300, 420, 20, 20);
+			context.fillStyle = uiColor;
+			
+			context.fillText("Yellow squares are coins - collect them to get points and a", 960, 424);
+			context.fillText("little health back", 960, 456);
+			
+			
+			context.fillStyle = "orange";
+			context.fillRect(300, 520, 30, 30);
+			context.fillStyle = uiColor;
+			
+			context.fillText("Orange squares are seekers - extremely deadly and fast, but", 960, 520);
+			context.fillText("they only appear after a while", 960, 552);
+			
+			context.fillStyle = "white";
+			context.fillRect(300, 595, 60, 60);
+			context.fillStyle = "black";
+			context.fillRect(305, 600, 50, 50);
+			context.fillStyle = uiColor;
+			
+			context.fillText("You might also encounter black holes - you can't see them,", 960, 616);
+			context.fillText("but their gravity will mess with everything", 960, 648);
+            
+			context.fillText("Use WASD or the arrow keys to move - W A S and D correspond to", 960, 712);
+			context.fillText("Up, Left, Down, and Right in that order.", 960, 744);
+            
+			context.fillText("Also use TAB in-game to open the shop - you can buy upgrades with", 960, 808);
+			context.fillText("your points, which are shown on the top left of the screen in-game.", 960, 840);
+            
+            context.fillText("(press t to exit this screen)", 960, 904);
+            
+            //context.fillText("After you die in a game, you can press TAB on the home page to open", 960, 904);
+			//context.fillText("up the Red Coin shop, where you can buy cosmetic upgrades!", 960, 936);
+			
+			context.textAlign = "start";
 		}
     }
 }
