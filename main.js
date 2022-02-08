@@ -12,6 +12,8 @@ var context = canvas.getContext("2d");
 
 var firstframe = true;
 
+var tfps = 60;
+
 canvas.style.width = "100%";
 canvas.style.height = "100%";
 
@@ -33,9 +35,11 @@ var MBsDownLF = [];
 
 var MBsDown = [false, false, false];
 
-var regspeed = 1; //Basically how much faster the current updates per second are than 60, so 120 would be regspeed of 2, 180 3, etc.
+var regspeed = tfps / 60; //Basically how much faster the current updates per second are than 60, so 120 would be regspeed of 2, 180 3, etc.
 
 var virtwidth = 1920;
+
+var pageStart;
 
 //Game vars
 var minSummonTime = 12;
@@ -163,6 +167,7 @@ requestAnimationFrame(loop);
 
 function loop(){
     if(firstframe){
+        pageStart = performance.now();
         if(canvas.height != (1920 / window.innerWidth) * 1080){
             canvas.height = (1920 / window.innerWidth) * window.innerHeight;
         }
@@ -265,7 +270,7 @@ function loop(){
 	keyslastupdate = keys.slice();
 	MBsDownLF = MBsDown.slice();
 	numframes++;
-    requestAnimationFrame(loop);
+    setTimeout(function(){requestAnimationFrame(loop);},(1000/tfps));
 }
 
 //Misc utility functions
@@ -287,6 +292,41 @@ function MBpressedInRange(MB, xi, yi, xf, yf){
 
 function MBdownInRange(MB, xi, yi, xf, yf){
 	return (MBsDown[MB] && MouseInRange(xi, yi, xf, yf));
+}
+
+function changeDifficulty(diff){
+    //0 = easy, 1 = normal, 2 = hard, 3 = extra hard, 4 = insane, 5 = impossible
+    switch(diff){
+        case 0:
+            //Easy
+            minSummonTime = 20;
+            summonTimeMulti = 300;
+            break;
+        case 1:
+            //Normal
+            minSummonTime = 12;
+            summonTimeMulti = 200;
+            break;
+        case 2:
+            //Hard
+            minSummonTime = 8;
+            summonTimeMulti = 160;
+            break;
+        case 3:
+            minSummonTime = 6;
+            summonTimeMulti = 140;
+            break;
+        case 4:
+            minSummonTime = 4;
+            summonTimeMulti = 120;
+            break;
+        case 5:
+            minSummonTime = 0;
+            summonTimeMulti = 100;
+            break;
+        default:
+            break;
+    }
 }
 
 //Misc game functions
@@ -580,8 +620,8 @@ class Player extends PhyThing{
 			}
 			this.xSpeed += xdelta * this.power / regspeed;
 			this.ySpeed += ydelta * this.power / regspeed;
-            this.xSpeed += xgrav;
-            this.ySpeed += ygrav;
+            this.xSpeed += xgrav / regspeed;
+            this.ySpeed += ygrav / regspeed;
 			if(numframes % regspeed == 0){
 				if(xdelta > 0){
 					if(ydelta > 0){
