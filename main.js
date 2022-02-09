@@ -35,13 +35,16 @@ var MBsDownLF = [];
 
 var MBsDown = [false, false, false];
 
-var regspeed = tfps / 60; //Basically how much faster the current updates per second are than 60, so 120 would be regspeed of 2, 180 3, etc.
+var regspeed; //Basically how much faster the current updates per second are than 60, so 120 would be regspeed of 2, 180 3, etc.
 
 var virtwidth = 1920;
 
 var pageStart;
 
 //Game vars
+
+var lastTime;
+
 var minSummonTime = 12;
 
 var summonTimeMulti = 200;
@@ -66,7 +69,7 @@ var innerFlashlightRad = 30;
 var outerFlashlightRad = 200;
 
 var shieldcooldown = 20;
-var lastShield = -shieldcooldown * 60 * regspeed;
+var lastShield = -shieldcooldown * 60 * regspeed - 100000000000;
     
 var summontime = 50;
 
@@ -111,6 +114,8 @@ var upKeyDown = false;
 var downKeyDown = false;
 var leftKeyDown = false;
 var rightKeyDown = false;
+
+var regulateregspeed = true;
 
 //Game instance vars
 var player;
@@ -162,10 +167,25 @@ window.addEventListener('resize', function(){
     }
 });
 
+document.addEventListener("visibilitychange", function(){
+    if (document.visibilityState != 'visible' && playing) {
+        shop.visible = true;
+        paused = true;
+    }
+});
+
 //Main loop
 requestAnimationFrame(loop);
 
-function loop(){
+function loop(now){
+    if(regulateregspeed){
+        if(lastTime != null){
+            regspeed = (1000 / 60)/(now - lastTime);
+        }
+        else{
+            regspeed = 1;
+        }
+    }
     if(firstframe){
         pageStart = performance.now();
         if(canvas.height != (1920 / window.innerWidth) * 1080){
@@ -251,7 +271,7 @@ function loop(){
         context.fillStyle = "white";
         context.font = ("48px Courier New");
         context.fillText(Math.floor(points).toString(), 50, 50);
-        context.fillText(Math.floor(time / (60 * regspeed)).toString(), canvas.width - (50 + 32 * (Math.floor(time / 60).toString()).length), 50);
+        //context.fillText(Math.floor(time / (60 * regspeed)).toString(), canvas.width - (50 + 32 * (Math.floor(time / 60).toString()).length), 50);
     }
     i = 0;
     len = thingstoremove.length;
@@ -270,7 +290,9 @@ function loop(){
 	keyslastupdate = keys.slice();
 	MBsDownLF = MBsDown.slice();
 	numframes++;
+    lastTime = now
     setTimeout(function(){requestAnimationFrame(loop);},(1000/tfps));
+    //requestAnimationFrame(loop);
 }
 
 //Misc utility functions
@@ -500,7 +522,7 @@ function reset(){
     summontime = 50;
     points = 0;
 	shop = new ShopManager();
-	lastShield = -shieldcooldown * 60 * regspeed;
+	lastShield = -shieldcooldown * 60 * regspeed - 100000000000;
 }
     
 function homereset(){
@@ -622,7 +644,7 @@ class Player extends PhyThing{
 			this.ySpeed += ydelta * this.power / regspeed;
             this.xSpeed += xgrav / regspeed;
             this.ySpeed += ygrav / regspeed;
-			if(numframes % regspeed == 0){
+			if(Math.random() < 1 / regspeed){
 				if(xdelta > 0){
 					if(ydelta > 0){
 						this.exhausts.push(new Exhaust(this.xpos + this.width/2, this.ypos + this.height / 2, -0.707, -0.707, this.xSpeed, this.ySpeed, this.exhaustweight));
@@ -941,7 +963,7 @@ class Coin extends PhyThing{
 			}
 			if(hitPlayer){
 				points += 1000 * (player.pointmulti / 100);
-                player.health += 50;
+                player.health += 100;
                 if(player.health > 1000){
                     player.health = 1000;
                 }
@@ -1149,9 +1171,9 @@ class ShopManager extends Thing{
 			
 			context.fillText("Thrust Power Multiplier: "+Math.floor(player.power * 100).toString()+"%", 200, 600);
 			context.fillText("(Cost: 5000)", 200, 648);
-            		var cooldownLeft = lastShield + shieldcooldown * 60 * regspeed - time;
+            var cooldownLeft = lastShield + shieldcooldown * 60 * regspeed - time;
 			if(cooldownLeft <= 0){cooldownLeft = 0;}
-            context.fillText("Single-use shield: "+ (player.shielded ? "On" : "Off") + " (Cooldown: " + Math.ceil(cooldownLeft / (60 * regspeed)).toString() + ")", 200, 800);
+            context.fillText("Single-use shield: " + (player.shielded ? "On" : "Off") + ((cooldownLeft > 0) ? " (Cooldown)" : ""), 200, 800);
 			context.fillText("(Cost: 20000)", 200, 848);
 			
 			
@@ -1173,7 +1195,7 @@ class ShopManager extends Thing{
             if(!player.shielded && this.shieldUpgradeButton.clicked && points >= 20000 && cooldownLeft == 0){
                 player.shielded = true;
                 points -= 20000;
-		lastShield = time;
+		        lastShield = time;
             }
 		}
 	}
